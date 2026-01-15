@@ -1,6 +1,6 @@
 # Nord Dotfiles
 
-My personal dotfiles for a Wayland desktop setup, themed with the [Nord color palette](https://www.nordtheme.com/).
+My personal dotfiles for a Hyprland desktop setup, themed with the [Nord color palette](https://www.nordtheme.com/).
 
 ![Dark Theme](dark.png)
 ![Light Theme](light.png)
