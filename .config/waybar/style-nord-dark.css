@@ -1,0 +1,12 @@
+:root {
+	--bg: #0B0C0F;
+	--fg: #E5E9F0;
+	--accent: #88C0D0;
+	--muted: #3B4252;
+}
+
+* { font-family: "Inter", "JetBrainsMono Nerd Font", sans-serif; }
+window { background: transparent; }
+#bar { background: rgba(11,12,15,0.9); color: var(--fg); }
+#workspaces button.focused { background: var(--accent); color: #0B0C0F; }
+#clock, #battery, #network, #pulseaudio, #tray { padding: 0 8px; }

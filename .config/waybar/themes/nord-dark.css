@@ -1,0 +1,101 @@
+* {
+	border: none;
+	border-radius: 0;
+	font-family: "JetBrainsMono Nerd Font", "Roboto", Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 14px;
+	min-height: 0;
+}
+
+window#waybar {
+	background: transparent;
+	color: #2E3440;
+	/* Nord Polar Night */
+}
+
+tooltip {
+	background: #E5E9F0;
+	border-radius: 10px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: #2E3440;
+}
+
+/* --- Common Style for Modules --- */
+#clock,
+#backlight,
+#tray,
+#idle_inhibitor,
+#pulseaudio,
+#cpu,
+#memory,
+#battery,
+#workspaces {
+	background-color: #E5E9F0;
+	/* Nord Light (Snow Storm) */
+	color: #2E3440;
+	/* Nord Dark (Polar Night) */
+	padding: 5px 15px;
+	margin: 6px 4px;
+	/* Gap between modules */
+	border-radius: 15px;
+	/* Rounded pills */
+}
+
+/* --- Workspaces --- */
+#workspaces {
+	padding: 0px 5px;
+	/* Less padding to fit buttons tightly */
+}
+
+#workspaces button {
+	padding: 5px 10px;
+	color: #2E3440;
+	background: transparent;
+	border-radius: 15px;
+	margin: 4px 2px;
+}
+
+#workspaces button.active {
+	background-color: #5E81AC;
+	/* Nord Blue (Frost) */
+	color: #ECEFF4;
+	/* White text */
+}
+
+#workspaces button:hover {
+	background-color: #81A1C1;
+	color: #ECEFF4;
+}
+
+/* --- Specific Module Tweaks --- */
+
+/* Left Side Tweaks */
+#clock {
+	margin-left: 10px;
+}
+
+#idle_inhibitor {
+	/* To match the 'zZz' look */
+	font-weight: 900;
+	font-size: 16px;
+	padding-right: 18px;
+}
+
+/* Right Side Tweaks */
+#battery {
+	margin-right: 10px;
+}
+
+#battery.charging,
+#battery.plugged {
+	color: #2E3440;
+	background-color: #A3BE8C;
+	/* Greenish for charging if desired */
+}
+
+#battery.critical:not(.charging) {
+	background-color: #BF616A;
+	/* Red for critical */
+	color: #ECEFF4;
+}

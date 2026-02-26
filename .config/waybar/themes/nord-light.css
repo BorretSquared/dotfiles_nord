@@ -1,0 +1,8 @@
+/* Nord Light for Waybar */
+* {
+	font-family: JetBrains Mono, Inter, sans-serif;
+	color: #2E3440;
+}
+window { background: #E5E9F0; }
+#workspaces button.focused { background: #81A1C1; color: #ECEFF4; }
+#clock, #battery, #cpu, #memory, #network { color: #2E3440; }

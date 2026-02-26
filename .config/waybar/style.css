@@ -1,296 +1,169 @@
-
-@keyframes blink-warning {
-    70% {
-        color: @light;
-    }
-
-    to {
-        color: @light;
-        background-color: @warning;
-    }
-}
-
-@keyframes blink-critical {
-    70% {
-      color: @light;
-    }
-
-    to {
-        color: @light;
-        background-color: @critical;
-    }
-}
-
-
 /* -----------------------------------------------------------------------------
- * Styles
+ * Colors
  * -------------------------------------------------------------------------- */
-
-/* COLORS */
-
-/* Nord */
 @define-color bg #2E3440;
-/*@define-color bg #353C4A;*/
-@define-color light #D8DEE9;
-/*@define-color dark @nord_dark_font;*/
+@define-color light #dde1e8;
+@define-color window_bg #c9d6e5;
+@define-color center_bg #c9d5e5;
+@define-color text_dark #2E3440;
+@define-color text_white #ECEFF4;
+@define-color focused #5E81AC;
 @define-color warning #ebcb8b;
 @define-color critical #BF616A;
-@define-color mode #434C5E;
-/*@define-color workspaces @bg;*/
-/*@define-color workspaces @nord_dark_font;*/
-/*@define-color workspacesfocused #434C5E;*/
-@define-color workspacesfocused #4C566A;
-@define-color tray @workspacesfocused;
-@define-color sound #EBCB8B;
-@define-color network #5D7096;
-@define-color memory #546484;
-@define-color cpu #596A8D;
-@define-color temp #4D5C78;
-@define-color layout #5e81ac;
-@define-color battery #88c0d0;
-@define-color date #434C5E;
-@define-color time #434C5E;
-@define-color backlight #434C5E;
-@define-color nord_bg #434C5E;
-@define-color nord_bg_blue #546484;
-@define-color nord_light #D8DEE9;
-@define-color nord_light_font #D8DEE9;
-@define-color nord_dark_font #434C5E;
+@define-color status_off #5E81AC;
+/* Nord10 Dark Blue for Muted/Offline */
 
-/* Reset all styles */
+/* -----------------------------------------------------------------------------
+ * Base Styles
+ * -------------------------------------------------------------------------- */
 * {
-    border: none;
-    border-radius: 3px;
-    min-height: 0;
-    margin: 0.2em 0.3em 0.2em 0.3em;
+	border: none;
+	font-family: "JetBrains Mono", "Font Awesome 5 Pro", sans-serif;
+	font-size: 13px;
+	font-weight: 600;
+	min-height: 0;
+	border-radius: 6px;
 }
 
-/* The whole bar */
+/* 
+ * MAIN BAR CONTAINER
+ * Fix: Margin set to 0px so the bar touches the screen edge 
+ * and adds no extra gap between itself and Hyprland windows.
+ */
 #waybar {
-    background: @bg;
-    color: @light;
-    font-family: "Cantarell", "Font Awesome 5 Pro";
-    font-size: 12px;
-    font-weight: bold;
+	background: transparent;
+	color: @text_dark;
+	margin: 0px;
+	padding: 0px;
 }
 
-/* Each module */
-#battery,
-#clock,
-#cpu,
-#custom-layout,
-#memory,
-#mode,
-#network,
-#pulseaudio,
-#temperature,
-#custom-alsa,
-#custom-pacman,
-#custom-weather,
-#custom-gpu,
-#tray,
-#backlight,
-#language,
-#custom-cpugovernor {
-    padding-left: 0.6em;
-    padding-right: 0.6em;
+/* -----------------------------------------------------------------------------
+ * Center Container
+ * -------------------------------------------------------------------------- */
+.modules-center {
+	background-color: transparent;
+	padding: 0;
+	margin: 0;
 }
 
-/* Each module that should blink */
-#mode,
-#memory,
-#temperature,
-#battery {
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
+.modules-center>widget {
+	margin: 0;
+	padding: 0;
 }
 
-/* Each critical module */
-#memory.critical,
-#cpu.critical,
-#temperature.critical,
-#battery.critical {
-    color: @critical;
-}
-
-/* Each critical that should blink */
-#mode,
-#memory.critical,
-#temperature.critical,
-#battery.critical.discharging {
-    animation-name: blink-critical;
-    animation-duration: 2s;
-}
-
-/* Each warning */
-#network.disconnected,
-#memory.warning,
-#cpu.warning,
-#temperature.warning,
-#battery.warning {
-    background: @warning;
-    color: @nord_dark_font;
-}
-
-/* Each warning that should blink */
-#battery.warning.discharging {
-    animation-name: blink-warning;
-    animation-duration: 3s;
-}
-
-/* And now modules themselves in their respective order */
-
-#mode { /* Shown current Sway mode (resize etc.) */
-    color: @light;
-    background: @mode;
-}
-
-/* Workspaces stuff */
-
+/* -----------------------------------------------------------------------------
+ * Workspaces
+ * -------------------------------------------------------------------------- */
 #workspaces {
- /*   color: #D8DEE9;
-    margin-right: 10px;*/
+	background-color: @center_bg;
+	color: @text_dark;
+	margin: 0;
+	padding: 0;
+	border-radius: 6px;
 }
 
 #workspaces button {
-    font-weight: bold; /* Somewhy the bar-wide setting is ignored*/
-    padding: 0;
-    /*color: #999;*/
-    opacity: 0.3;
-    background: none;
-    font-size: 1em;
+	padding: 0 5px;
+	min-width: 24px;
+	background: transparent;
+	color: @text_dark;
+	box-shadow: none;
+	text-shadow: none;
+	margin: 0;
+	border-radius: 6px;
+	transition: all 0.3s ease;
 }
 
-#workspaces button.focused {
-    background: @workspacesfocused;
-    color: #D8DEE9;
-    opacity: 1;
-    padding: 0 0.4em;
+#workspaces button:hover {
+	background-color: #D8DEE9;
+}
+
+#workspaces button.focused,
+#workspaces button.active {
+	background-color: @focused;
+	color: @text_white;
 }
 
 #workspaces button.urgent {
-    border-color: #c9545d;
-    color: #c9545d;
-    opacity: 1;
+	background-color: @critical;
+	color: @text_white;
 }
 
+/* -----------------------------------------------------------------------------
+ * Active Window Title
+ * -------------------------------------------------------------------------- */
 #window {
-    margin-right: 40px;
-    margin-left: 40px;
-    font-weight: normal;
-}
-#bluetooth {
-    background: @nord_bg_blue;
-    font-size: 1.2em;
-    font-weight: bold;
-    padding: 0 0.6em;
-}
-#custom-gpu {
-    background: @nord_bg;
-    font-weight: bold;
-    padding: 0 0.6em;
-}
-#custom-weather {
-    background: @mode;
-    font-weight: bold;
-    padding: 0 0.6em;
-}
-#custom-pacman {
-    background: @nord_light;
-    color: @nord_dark_font;
-    font-weight: bold;
-    padding: 0 0.6em;
-}
-#custom-scratchpad-indicator {
-    background: @nord_light;
-    color: @nord_dark_font;
-    font-weight: bold;
-    padding: 0 0.6em;
-}
-#idle_inhibitor {
-    background: @mode;
-    /*font-size: 1.6em;*/
-    font-weight: bold;
-    padding: 0 0.6em;
-}
-#custom-alsa {
-    background: @sound;
+	background-color: @window_bg;
+	color: @text_dark;
+	margin: 0 0 0 4px;
+	padding: 0 12px;
+	transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-#network {
-    background: @nord_bg_blue;
-}
-
-#memory {
-    background: @memory;
-}
-
-#cpu {
-    background: @nord_bg;
-    color: #D8DEE9;
-}
-#cpu.critical {
-    color: @nord_dark_font;
-}
+/* -----------------------------------------------------------------------------
+ * Right/Left Side Modules (General)
+ * -------------------------------------------------------------------------- */
+#clock,
+#battery,
+#cpu,
+#memory,
+#disk,
+#temperature,
+#backlight,
+#network,
+#pulseaudio,
+#wireplumber,
+#tray,
+#mode,
+#idle_inhibitor,
+#custom-expand,
+#custom-cycle_wall,
+#custom-ss,
+#custom-gpu,
+#mpd,
 #language {
-    background: @nord_bg_blue;
-    color: #D8DEE9;
-    padding: 0 0.4em;
-}
-#custom-cpugovernor {
-    background-color: @nord_light;
-    color: @nord_dark_font;
-}
-#custom-cpugovernor.perf {
-    
-}
-#temperature {
-    background-color: @nord_bg;
-    color: #D8DEE9;
-}
-#temperature.critical {
-    background:  @critical;
-}
-#custom-layout {
-    background: @layout;
+	background-color: @light;
+	color: @text_dark;
+	padding: 1px 6px;
+	margin: 0 1px;
 }
 
-#battery {
-    background: @battery;
+/* -----------------------------------------------------------------------------
+ * Weather Module Specifics
+ * -------------------------------------------------------------------------- */
+#custom-weather {
+	background-color: @light;
+	color: @text_dark;
+	margin: 0 1px;
+	/* Vertically centered icon fix: 0px top/bottom padding */
+	padding: 0px 6px 0px 6px;
 }
 
-#backlight {
-    background: @backlight;
+/* -----------------------------------------------------------------------------
+ * Module States
+ * -------------------------------------------------------------------------- */
+#battery.charging,
+#battery.plugged {
+	color: @text_dark;
+	background-color: #A3BE8C;
 }
 
-#clock {
-    background: @nord_bg_blue;
-    color: #D8DEE9;
-}
-#clock.date {
-    background: @date;
+#battery.critical:not(.charging) {
+	background-color: @critical;
+	color: @text_white;
+	animation: blink 0.5s linear infinite alternate;
 }
 
-#clock.time {
-    background: @mode;
+/* Dark Blue for off states */
+#pulseaudio.muted,
+#network.disconnected {
+	background-color: @status_off;
+	color: @text_white;
 }
 
-#pulseaudio { /* Unsused but kept for those who needs it */
-    background: @nord_bg_blue;
-    color: #D8DEE9;
-}
-
-#pulseaudio.muted {
-    background: #BF616A;
-    color: #BF616A;
-    /* No styles */
-}
-#pulseaudio.source-muted {
-    background: #D08770;
-    color: #D8DEE9;
-    /* No styles */
-}
-#tray {
-    background: #434C5E;
+@keyframes blink {
+	to {
+		background-color: @light;
+		color: @critical;
+	}
 }
