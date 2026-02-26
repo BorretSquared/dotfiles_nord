@@ -14,177 +14,51 @@ set $down j
 set $up k
 set $right l
 # Your preferred terminal emulator
-#set $term alacritty
+set $term foot
+# Your preferred application launcher
+set $menu wmenu-run
 
+### Output configuration
+#
+# Default wallpaper (more resolutions are available in /usr/share/backgrounds/sway/)
+output * bg /usr/share/backgrounds/sway/Sway_Wallpaper_Blue_1920x1080.png fill
+#
+# Example configuration:
+#
+#   output HDMI-A-1 resolution 1920x1080 position 1920,0
+#
+# You can get the names of your outputs by running: swaymsg -t get_outputs
 
-#####################
-### PIPSHAG EDITS ###
-#####################
+### Idle configuration
+#
+# Example configuration:
+#
+# exec swayidle -w \
+#          timeout 300 'swaylock -f -c 000000' \
+#          timeout 600 'swaymsg "output * power off"' resume 'swaymsg "output * power on"' \
+#          before-sleep 'swaylock -f -c 000000'
+#
+# This will lock your screen after 300 seconds of inactivity, then turn off
+# your displays after another 300 seconds, and turn your screens back on when
+# resumed. It will also lock your screen before your computer goes to sleep.
 
-input "3141:30264:AKKO_AKKO_3084BT" {
-    xkb_layout us,se
-    xkb_options caps:escape,grp:alt_caps_toggle
-    xkb_numlock enable
-    repeat_delay 200
-    repeat_rate 65
-}
-
-# Set pointer scroll factor
-input "type:pointer" {
-  scroll_factor 3
-}
-
-# Set Displays
-set $bg ~/Pictures/background_sway.png
-set $bg_animated ~/Videos/space.mp4
-set $lock_bg ~/Pictures/BgCorrupted.png
-set $lock_opts '--effect-pixelate 10 --indicator --ring-color 4C566A --key-hl-color 4C566A --line-color 2E3440 --separator-color 5E81AC'
-
-# Refresh and VRR
-output DP-1 {
-    scale 1
-    pos 0 0
-    res 2560x1440@144.000Hz
-    adaptive_sync on
-    subpixel none
-}
-
-## Background
-# Static
-output * bg $bg fill
-
-# Animated BG manager
-#exec mpvpaper -o "no-audio" DP-1 $bg_animated
-#swaybg_command -
-
-# Terminal
-set $term kitty
-
-# App Launcher
-set $menu ulauncher
-
-# Add alt tab
-bindsym $mod+tab workspace back_and_forth 
-
-# Add screenshot capability
-    # Region-select-screenshot to file
-    bindsym ctrl+shift+Print exec grimshot --notify save area
-    # Region-select-screenshot to file
-    bindsym shift+Print exec grimshot --notify copy area
-    # Region-select-video to file
-    bindsym alt+shift+Print exec wf-recorder -g "$(slurp)"
-
-# Add section for handling locking and sleeping
-bindsym Alt+l exec 'swaylock -i $lock_bg'
-
-exec swayidle -w \
-        timeout 300 'swaymsg "output * dpms off"' \
-        resume 'swaymsg "output * dpms on"' \
-        timeout 600 'systemctl suspend' \
-        before-sleep 'swaylock -f -i $lock_bg'
-
-# Handle waybar
-bar {
-     swaybar_command waybar
-}
-
-# Quality of life
-
-    # Drag floating windows by holding down $mod and left mouse button.
-    # Resize them with right mouse button + $mod.
-    # Despite the name, also works for non-floating windows.
-    # Change normal to inverse to use left mouse button for resizing and right
-    # mouse button for dragging.
-    floating_modifier $mod normal
-
-# Font, borders, and gaps   
-    font pango:Cantarell 10
-    gaps inner 4
-    gaps outer -4
-    gaps top -2
-    gaps bottom 0
-    default_border pixel 2
-    default_floating_border pixel 2
-
-# Colours
-    client.background n/a #434c5e n/a
-    client.focused #4C566A #434c5e #eceff4 #434c5e #434c5e
-    client.focused_inactive #3b4252 #3b4252 #eceff4 #3b4252 #3b4252
-    client.unfocused #3b4252 #3b4252 #eceff4 #3b4252 #3b4252
-    client.urgent #4C566A #434c5e #eceff4 #434c5e #434c5e
-
-# Hotkeys
-    ## Special keys
-    # Replacing multimedia for overlay
-    bindsym --locked {
-        ## Volume Control
-        # Support for wob
-        XF86AudioRaiseVolume exec pamixer -ui 5 && pamixer --get-volume > /tmp/wobpipe
-        XF86AudioLowerVolume exec pamixer -ud 5 && pamixer --get-volume > /tmp/wobpipe
-        XF86AudioMute exec pamixer --toggle-mute && ( pamixer --get-mute && echo 0 > /tmp/wobpipe ) || pamixer --get-volume > /tmp/wobpipe
-
-        ## Volume Control
-        # No OSD
-        #XF86AudioRaiseVolume exec sh -c "pactl set-sink-mute 0 false ; pactl set-sink-volume 0 +5%"
-        #XF86AudioLowerVolume exec sh -c "pactl set-sink-mute 0 false ; pactl set-sink-volume 0 -5%"
-        #$mod+F12 exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
-    }
-
-    ## Dismiss notifications
-    bindsym $mod+n exec "makoctl dismiss"
-    bindsym $mod+Shift+n exec "makoctl dismiss -a"
-
-    ## Easier kill switch
-    bindsym $mod+q kill
-
-    ## Toggle floating
-    bindsym $mod+Shift+space floating toggle
-
-    ## Add floating windows and inhibit idle
-    # Get app_id or class with
-    # swaymsg -t get_tree | grep
-    for_window [app_id="gnome-calculator"] floating enable
-    for_window [app_id="org.gnome.Nautilus"] floating enable
-    for_window [app_id="org.keepassxc.KeePassXC"] floating enable
-    for_window [class="KeePassXC"] floating enable
-    for_window [class="GitKraken"] floating enable
-    for_window [app_id="gnome-calendar"] floating enable
-    for_window [app_id="gnome-control-center"] floating enable
-    for_window [app_id="blueberry.py"] floating enable
-    for_window [app_id="ulauncher"] floating enable, border none
-    for_window [app_id="mpv"] floating enable, inhibit_idle visible
-    for_window [class="Steam"] floating enable
-    for_window [class="steam_app*"] inhibit_idle focus  
-
-    ## Assign Workspace opens
-    assign [class="jetbrains-idea"] → workspace 2
-    assign [class="jetbrains-datagrip"] → workspace 2
-
-    ## Add opacity to unmanaged applications
-    for_window [app_id="subl"] opacity 0.9
-
-    # Autostart applications per workspace
-    exec swaymsg "workspace 3; exec spotify;"
-    exec swaymsg "workspace 1; exec google-chrome-stable;"
-    exec swaymsg "workspace 1; exec subl;"
-    exec swaymsg "workspace 1; exec kitty;"
-    exec swaymsg "workspace 1; exec keepassxc;"
-
-## Run software
-exec wl-paste -t text --watch clipman store
-exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
-exec systemctl --user import-environment DISPLAY WAYLAND_DISPLAY SWAYSOCK
-exec_always rm /tmp/wobpipe && mkfifo /tmp/wobpipe && tail -f /tmp/wobpipe | wob --bar-color=#FFA3BE8C --background-color=#FF3B4252 --border-color=#FF8FBCBB --anchor=bottom --width=600 --height=50 --border=5 --offset=0 --padding=5 --margin=60
-exec udiskie
-exec autotiling
-exec_always mako
-exec_always nm-applet --indicator
-exec openrgb --startminimized --profile default
-exec kdeconnect-indicator
-
-#####################
-#####################
-#####################
+### Input configuration
+#
+# Example configuration:
+#
+#   input type:touchpad {
+#       dwt enabled
+#       tap enabled
+#       natural_scroll enabled
+#       middle_emulation enabled
+#   }
+#
+#   input type:keyboard {
+#       xkb_layout "eu"
+#   }
+#
+# You can also configure each device individually.
+# Read `man 5 sway-input` for more information about this section.
 
 ### Key bindings
 #
@@ -194,11 +68,10 @@ exec kdeconnect-indicator
     bindsym $mod+Return exec $term
 
     # Kill focused window
-    #bindsym $mod+Shift+q kill
+    bindsym $mod+Shift+q kill
 
     # Start your launcher
     bindsym $mod+d exec $menu
-    bindsym Control+space exec $menu
 
     # Drag floating windows by holding down $mod and left mouse button.
     # Resize them with right mouse button + $mod.
@@ -211,15 +84,15 @@ exec kdeconnect-indicator
     bindsym $mod+Shift+c reload
 
     # Exit sway (logs you out of your Wayland session)
-    bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -b 'Yes, exit sway' 'swaymsg exit'
+    bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
 #
 # Moving around:
 #
     # Move your focus around
-    #bindsym $mod+$left focus left
-    #bindsym $mod+$down focus down
-    #bindsym $mod+$up focus up
-    #bindsym $mod+$right focus right
+    bindsym $mod+$left focus left
+    bindsym $mod+$down focus down
+    bindsym $mod+$up focus up
+    bindsym $mod+$right focus right
     # Or use $mod+[up|down|left|right]
     bindsym $mod+Left focus left
     bindsym $mod+Down focus down
@@ -227,16 +100,16 @@ exec kdeconnect-indicator
     bindsym $mod+Right focus right
 
     # Move the focused window with the same, but add Shift
-    #bindsym $mod+Shift+$left move left
-    #bindsym $mod+Shift+$down move down
-    #bindsym $mod+Shift+$up move up
-    #bindsym $mod+Shift+$right move right
+    bindsym $mod+Shift+$left move left
+    bindsym $mod+Shift+$down move down
+    bindsym $mod+Shift+$up move up
+    bindsym $mod+Shift+$right move right
     # Ditto, with arrow keys
     bindsym $mod+Shift+Left move left
     bindsym $mod+Shift+Down move down
     bindsym $mod+Shift+Up move up
     bindsym $mod+Shift+Right move right
-
+#
 # Workspaces:
 #
     # Switch to workspace
@@ -281,7 +154,7 @@ exec kdeconnect-indicator
     bindsym $mod+f fullscreen
 
     # Toggle the current focus between tiling and floating mode
-    
+    bindsym $mod+Shift+space floating toggle
 
     # Swap focus between the tiling area and the floating area
     bindsym $mod+space focus mode_toggle
@@ -323,6 +196,37 @@ mode "resize" {
     bindsym Return mode "default"
     bindsym Escape mode "default"
 }
-bindsym $mod+r rmode "resize"
+bindsym $mod+r mode "resize"
+#
+# Utilities:
+#
+    # Special keys to adjust volume via PulseAudio
+    bindsym --locked XF86AudioMute exec pactl set-sink-mute \@DEFAULT_SINK@ toggle
+    bindsym --locked XF86AudioLowerVolume exec pactl set-sink-volume \@DEFAULT_SINK@ -5%
+    bindsym --locked XF86AudioRaiseVolume exec pactl set-sink-volume \@DEFAULT_SINK@ +5%
+    bindsym --locked XF86AudioMicMute exec pactl set-source-mute \@DEFAULT_SOURCE@ toggle
+    # Special keys to adjust brightness via brightnessctl
+    bindsym --locked XF86MonBrightnessDown exec brightnessctl set 5%-
+    bindsym --locked XF86MonBrightnessUp exec brightnessctl set 5%+
+    # Special key to take a screenshot with grim
+    bindsym Print exec grim
+
+#
+# Status Bar:
+#
+# Read `man 5 sway-bar` for more information about this section.
+bar {
+    position top
+
+    # When the status_command prints a new line to stdout, swaybar updates.
+    # The default just shows the current date and time.
+    status_command while date +'%Y-%m-%d %X'; do sleep 1; done
+
+    colors {
+        statusline #ffffff
+        background #323232
+        inactive_workspace #32323200 #32323200 #5c5c5c
+    }
+}
 
 include /etc/sway/config.d/*

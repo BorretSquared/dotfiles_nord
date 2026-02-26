@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Monitor for hibernation requests and lock screen first
+exec systemd-inhibit --what=sleep:handle-lid-switch --who="HyprLock" --why="Lock screen before hibernation" --mode=delay \
+  dbus-monitor --system "type='signal',interface='org.freedesktop.login1.Manager',member='PrepareForSleep'" | \
+  while read line; do
+    if echo "$line" | grep -q "boolean true"; then
+      # System is about to sleep - lock immediately
+      echo "$(date): PrepareForSleep true - locking screen" >> /tmp/hibernate-inhibitor.log
+      hyprlock &
+      sleep 0.5  # Give lock time to appear
+      echo "$(date): Lock screen started, allowing hibernation" >> /tmp/hibernate-inhibitor.log
+    fi
+  done

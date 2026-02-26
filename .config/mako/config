@@ -1,1 +1,69 @@
-/home/pipshag/Documents/Mackup/.config/mako/config
+# Mako notification daemon configuration
+# Nord Light Theme matching Waybar design
+
+# Positioning
+anchor=top-right
+margin=20
+padding=15
+
+# Size
+width=350
+height=150
+
+# Colors - Nord Light Theme (consistent borders)
+background-color=#ECEFF4
+text-color=#2E3440
+border-color=#5E81AC
+border-size=2
+border-radius=6
+
+# Progress bar colors
+progress-color=over #5E81AC
+
+# Typography (matching Waybar)
+font=JetBrains Mono 11
+format=<b>%s</b>\n%b
+text-alignment=left
+
+# Icons
+icon-path=/usr/share/icons/Papirus-Light
+max-icon-size=64
+icon-location=left
+
+# Behavior
+sort=-time
+layer=overlay
+default-timeout=5000
+ignore-timeout=0
+max-visible=5
+history=1
+
+# Group notifications
+group-by=app-name
+
+# Urgency-specific styling (consistent borders)
+[urgency=low]
+border-color=#5E81AC
+default-timeout=3000
+
+[urgency=normal]
+border-color=#5E81AC
+default-timeout=5000
+
+[urgency=critical]
+border-color=#BF616A
+text-color=#BF616A
+default-timeout=0
+
+# App-specific rules (consistent borders)
+[app-name="volume"]
+border-color=#5E81AC
+default-timeout=2000
+
+[app-name="brightness"]
+border-color=#5E81AC
+default-timeout=2000
+
+[app-name="battery"]
+border-color=#BF616A
+default-timeout=8000

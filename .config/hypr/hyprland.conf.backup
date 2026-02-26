@@ -1,12 +1,7 @@
-`exec-once = hyprpm reload -n || (hyprpm update -n && hyprpm reload -n)
 #####################
 ### HYPRLAND CONF ###
 #####################
-# Wiki: https://wiki.hypr.land/Configuring/
-# Updated for Hyprland v0.53+ syntax (January 2026)
-# - Window rules converted to new syntax with match: props
-# - Removed deprecated options: rounding_power, new_optimizations
-# - Layer rules updated to new block syntax
+# Wiki: https://wiki.hyprland.org/Configuring/
 
 # Load Hyprland plugins
 exec-once = hyprpm reload
@@ -105,6 +100,7 @@ general {
 
 decoration {
     rounding = 6
+    rounding_power = 2
     
     active_opacity = 1.0
     inactive_opacity = 1.0
@@ -122,6 +118,7 @@ decoration {
         passes = 1
         ignore_opacity = true
         xray = true
+        new_optimizations = true
         vibrancy = 0.15
     }
 }
@@ -160,16 +157,11 @@ animations {
     animation = workspacesOut, 1, 2, easeOutCubic, slide
 }
 
-layerrule {
-    name = noanim-hyprpaper
-    no_anim = on
-    match:namespace = hyprpaper
-}
+layerrule = noanim, hyprpaper
 
 misc {
     force_default_wallpaper = 0
     disable_hyprland_logo = true
-    enable_anr_dialog = false
 }
 
 #################
@@ -251,8 +243,6 @@ bind = SUPER, N, togglesplit   # dwindle
 # Workspace navigation
 bind = SUPER, grave, hyprexpo:expo, toggle   # Mission Control
 bind = SUPER, TAB, workspace, previous
-bind = SUPER SHIFT, TAB, exec, ~/.config/hypr/scripts/next_workspace.sh
-bind = SUPER CTRL, TAB, exec, ~/.config/hypr/scripts/prev_workspace.sh
 bind = $mainMod, 1, exec, ~/.config/hypr/scripts/switch_workspace.sh 1
 bind = $mainMod, 2, exec, ~/.config/hypr/scripts/switch_workspace.sh 2
 bind = $mainMod, 3, exec, ~/.config/hypr/scripts/switch_workspace.sh 3
@@ -265,7 +255,6 @@ bind = $mainMod, 9, exec, ~/.config/hypr/scripts/switch_workspace.sh 9
 bind = $mainMod, 0, exec, ~/.config/hypr/scripts/switch_workspace.sh 10
 
 # Move windows to workspaces
-
 bind = $mainMod SHIFT, 1, movetoworkspace, 1
 bind = $mainMod SHIFT, 2, movetoworkspace, 2
 bind = $mainMod SHIFT, 3, movetoworkspace, 3
@@ -304,18 +293,11 @@ bindm = $mainMod, mouse:272, movewindow
 bindm = $mainMod, mouse:273, resizewindow
 
 # Screenshot utilities
-layerrule {
-    name = noanim-selection
-    no_anim = on
-    match:namespace = selection
-}
-
+layerrule = noanim, selection
 bind = , Print, exec, grim -s 1.33 -g "$(slurp)" - | wl-copy
 bind = SUPER SHIFT, S, exec, grim -s 1.33 -g "$(slurp)" - | wl-copy
 
 # Keyboard layout switching
-# Screen timeout toggle
-bind = $mainMod, X, exec, ~/.config/hypr/scripts/toggle_screen_timeout.sh
 bind = SUPER, SPACE, exec, ~/.config/hypr/scripts/keyboard_layout_notify.sh
 
 # Power and lock
@@ -345,74 +327,30 @@ bindl = ALT_R, XF86AudioPlay, exec, playerctl next
 ####################
 
 # Default window behavior
-windowrule = suppress_event maximize, match:class .*
+windowrule = suppressevent maximize, class:.*
 
 # Minecraft configuration
-windowrule {
-    name = minecraft-float
-    match:class = Minecraft
-    match:xwayland = true
-    match:fullscreen = true
-    
-    float = on
-}
-
-windowrule {
-    name = minecraft-size
-    match:title = Minecraft
-    
-    move = 0 0
-    size = 1536 1024
-}
-
+windowrule = float,class:(Minecraft),xwayland:(1),fullscreen:(1)
+windowrule = move 0 0,size:1536x1024,title:(Minecraft)
 xwayland:force_zero_scaling = 1
 
 # Kitty transparency
-windowrule = opacity 0.85 0.85, match:class ^(kitty)$
+windowrulev2 = opacity 0.85 0.85, class:^(kitty)$
 
 # Dunst (notifications) styling
-windowrule = border_size 0, match:class ^(Dunst)$`
-windowrule = no_blur on, match:class ^(Dunst)$
-windowrule = no_anim on, match:class ^(Dunst)$
-windowrule = float on, match:class ^(Dunst)$
-
-layerrule {
-    name = notifications-slide
-    animation = slide
-    match:namespace = notifications
-}
+windowrulev2 = noborder, class:^(Dunst)$
+windowrulev2 = noblur, class:^(Dunst)$
+windowrulev2 = noanim, class:^(Dunst)$
+windowrulev2 = float, class:^(Dunst)$
+layerrule = animation slide, notifications
 
 # Affinity and Wine application fixes
-windowrule = no_blur on, match:class ^(affinity\.(exe|photo|designer|publisher))$
-windowrule = no_shadow on, match:class ^(affinity\.(exe|photo|designer|publisher))$
-windowrule = no_anim on, match:class ^(affinity\.(exe|photo|designer|publisher))$
+windowrulev2 = noblur, class:^(affinity\.(exe|photo|designer|publisher))$
+windowrulev2 = noshadow, class:^(affinity\.(exe|photo|designer|publisher))$
+windowrulev2 = noanim, class:^(affinity\.(exe|photo|designer|publisher))$
 
-windowrule = no_blur on, match:class ^(wine)$
-windowrule = no_shadow on, match:class ^(wine)$
+windowrulev2 = noblur, class:^(wine)$, title:^(.*)$
+windowrulev2 = noshadow, class:^(wine)$, title:^(.*)$
 
 # XWayland fixes
-windowrule {
-    name = xwayland-nofocus-fix
-    match:class = ^$
-    match:title = ^$
-    match:xwayland = true
-    match:float = true
-    match:fullscreen = false
-    match:pin = false
-    
-    no_focus = on
-}
-# -----------------------------------------------------
-# NINJABRAIN BOT OVERLAY RULES
-# -----------------------------------------------------
-
-windowrule = float on, match:class ^(ninjabrainbot-Main)$
-windowrule = border_size 0, match:class ^(ninjabrainbot-Main)$
-windowrule = no_shadow on, match:class ^(ninjabrainbot-Main)$
-
-# -----------------------------------------------------
-# KEYBIND
-# -----------------------------------------------------
-
-bind = $mainMod, O, exec, ~/.config/hypr/scripts/toggle_ninjabrain.sh
-
+windowrule = nofocus,class:^$,title:^$,xwayland:1,floating:1,fullscreen:0,pinned:0
