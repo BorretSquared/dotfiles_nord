@@ -1,0 +1,15 @@
+[SddmGreeterTheme]
+Name=Nord Light
+Description=A clean and modern SDDM theme inspired by the Nord Light color palette, perfect for Hyprland setups
+Author=Custom Theme
+Copyright=(c) 2025
+License=MIT
+Type=sddm-theme
+Version=1.0
+Website=
+Screenshot=screenshot.png
+MainScript=Main.qml
+ConfigFile=theme.conf
+TranslationsDirectory=translations
+Theme-Id=nord-light
+Theme-API=2.0
