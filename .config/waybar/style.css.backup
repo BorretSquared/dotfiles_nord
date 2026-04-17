@@ -1,0 +1,162 @@
+/* -----------------------------------------------------------------------------
+ * Nord Colors
+ * -------------------------------------------------------------------------- */
+@define-color nord_bg #2E3440;
+/* Darkest Nord */
+@define-color nord_bg_blue #434C5E;
+/* Slightly lighter dark */
+@define-color nord_light #D8DEE9;
+/* Light Grey/White */
+@define-color nord_dark_font #2E3440;
+@define-color nord_light_font #ECEFF4;
+@define-color active_color #5E81AC;
+/* Nord Blue */
+@define-color warning #ebcb8b;
+@define-color critical #BF616A;
+
+/* -----------------------------------------------------------------------------
+ * Global Reset & Shape
+ * -------------------------------------------------------------------------- */
+* {
+	border: none;
+	border-radius: 2.5px;
+	/* Precise rounding as requested */
+	font-family: "Cantarell", "Font Awesome 5 Pro", sans-serif;
+	font-size: 13px;
+	font-weight: bold;
+	min-height: 0;
+}
+
+/* -----------------------------------------------------------------------------
+ * Bar Container
+ * -------------------------------------------------------------------------- */
+#waybar {
+	background: transparent;
+	/* Allows gaps to show wallpaper */
+	color: @nord_dark_font;
+	/* Spacing around the bezel - adjust '10px' to match your exact bezel preference */
+	margin-top: 5px;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+/* -----------------------------------------------------------------------------
+ * General Module Styling (The Light Squares)
+ * -------------------------------------------------------------------------- */
+/* Grouping all standard modules to look like the light buttons in your screenshot */
+#clock,
+#battery,
+#cpu,
+#memory,
+#temperature,
+#network,
+#pulseaudio,
+#custom-media,
+#tray,
+#mode,
+#idle_inhibitor,
+#custom-weather,
+#custom-gpu,
+#backlight,
+#language,
+#custom-cpugovernor {
+	background-color: @nord_light;
+	color: @nord_dark_font;
+	padding: 0.3em 0.6em;
+	margin: 0 4px;
+	/* Uniform spacing between blocks */
+}
+
+/* -----------------------------------------------------------------------------
+ * Workspaces
+ * -------------------------------------------------------------------------- */
+#workspaces {
+	background-color: @nord_light;
+	color: @nord_dark_font;
+	margin: 0 4px;
+	padding: 2px 2px;
+	/* Slight padding so the active button doesn't touch edges */
+}
+
+#workspaces button {
+	padding: 0 5px;
+	background: transparent;
+	color: @nord_dark_font;
+	border-radius: 2.5px;
+	margin: 0 2px;
+}
+
+/* The Active Workspace: Dark Background, White Text */
+#workspaces button.focused {
+	background-color: @nord_bg_blue;
+	/* Or @active_color if you prefer blue */
+	color: @nord_light_font;
+}
+
+#workspaces button.urgent {
+	background-color: @critical;
+	color: @nord_light_font;
+}
+
+/* -----------------------------------------------------------------------------
+ * Window Title (Middle Section)
+ * -------------------------------------------------------------------------- */
+/* You mentioned this should be Dark Background with White Text */
+#window {
+	background-color: @nord_bg;
+	/* Dark Nord */
+	color: @nord_light_font;
+	/* White Text */
+	padding: 0.3em 1em;
+	margin: 0 4px;
+}
+
+/* -----------------------------------------------------------------------------
+ * Module Specific Overrides (Icons & States)
+ * -------------------------------------------------------------------------- */
+
+/* Hardware groups usually need slightly less padding if icon-only, 
+   but your screenshot shows text, so standard padding applies. */
+
+/* Battery States */
+#battery.charging,
+#battery.plugged {
+	color: @nord_dark_font;
+	background-color: #A3BE8C;
+	/* Greenish */
+}
+
+#battery.critical:not(.charging) {
+	background-color: @critical;
+	color: @nord_light_font;
+	animation-name: blink;
+	animation-duration: 0.5s;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+	animation-direction: alternate;
+}
+
+/* Volume Muted */
+#pulseaudio.muted {
+	background-color: @critical;
+	color: @nord_light_font;
+}
+
+/* Network Disconnected */
+#network.disconnected {
+	background-color: @critical;
+	color: @nord_light_font;
+}
+
+/* Tray styling */
+#tray {
+	padding: 0 0.6em;
+}
+
+/* Animation Definitions */
+@keyframes blink {
+	to {
+		background-color: @nord_light;
+		color: @critical;
+	}
+}
