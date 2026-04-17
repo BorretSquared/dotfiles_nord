@@ -1,0 +1,44 @@
+// Inherit from the basic US layout. This provides all the numbers,
+// symbols, function keys, etc., by default.
+default partial alphanumeric_keys
+xkb_symbols "v3" {
+    include "us(basic)"
+
+    name[Group1]= "English (ATP v3)";
+
+    // Now, we override ONLY the letter keys for the ATPv3 layout.
+    // All other keys (numbers, F-keys, etc.) will be inherited from "us(basic)".
+    key <AD01> { [         w,          W ] };
+    key <AD02> { [         g,          G ] };
+    key <AD03> { [         d,          D ] };
+    key <AD04> { [         f,          F ] };
+    key <AD05> { [         b,          B ] };
+    key <AD06> { [         q,          Q ] };
+    key <AD07> { [         l,          L ] };
+    key <AD08> { [         u,          U ] };
+    key <AD09> { [         o,          O ] };
+    key <AD10> { [         y,          Y ] };
+
+    key <AC01> { [         r,          R ] };
+    key <AC02> { [         s,          S ] };
+    key <AC03> { [         t,          T ] };
+    key <AC04> { [         h,          H ] };
+    key <AC05> { [         k,          K ] };
+    key <AC06> { [         j,          J ] };
+    key <AC07> { [         n,          N ] };
+    key <AC08> { [         e,          E ] };
+    key <AC09> { [         a,          A ] };
+    key <AC10> { [         i,          I ] };
+    key <AC11> { [ semicolon,      colon ] };
+
+    key <AB01> { [         x,          X ] };
+    key <AB02> { [         c,          C ] };
+    key <AB03> { [         m,          M ] };
+    key <AB04> { [         p,          P ] };
+    key <AB05> { [         v,          V ] };
+    key <AB06> { [         z,          Z ] };
+    key <AB07> { [     comma,       less ] };
+    key <AB08> { [    period,    greater ] };
+    key <AB09> { [ apostrophe,   quotedbl ] };
+    key <AB10> { [     slash,   question ] };
+};

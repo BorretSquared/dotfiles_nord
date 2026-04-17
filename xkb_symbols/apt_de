@@ -1,0 +1,29 @@
+default partial alphanumeric_keys
+xkb_symbols "v3" {
+    // Start from your existing APT v3 layout
+    include "apt(v3)"
+
+    name[Group1] = "APT v3 + German AltGr";
+
+    // Enable AltGr via Right Alt
+    include "level3(ralt_switch)"
+
+    // Now override only the keys where you want German chars on higher levels.
+    // Format: [ base, Shift, AltGr, Shift+AltGr ]
+
+    // a / ä / Ä
+    key <AC09> { [ a, A, adiaeresis, Adiaeresis ] };
+
+    // o / ö / Ö
+    key <AD09> { [ o, O, odiaeresis, Odiaeresis ] };
+
+    // u / ü / Ü
+    key <AD08> { [ u, U, udiaeresis, Udiaeresis ] };
+
+    // s / ß (both AltGr and Shift+AltGr = ß, tweak if you want something else)
+    key <AC02> { [ s, S, ssharp, ssharp ] };
+
+    // If you want more symbols (e.g. € on AltGr+E, etc.), you can add:
+    // key <AC08> { [ e, E, EuroSign, EuroSign ] };
+};
+
