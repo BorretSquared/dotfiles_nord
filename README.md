@@ -2,7 +2,7 @@
 
 Personal Hyprland + Nord setup, kept in sync with the **laptop** (Surface @ `192.168.0.26`) and **desktop** installs.
 
-![Light wallpaper](backgrounds/GreatWallStairs.png)
+![Light wallpaper](backgrounds/GreatWallStairs.jpg)
 
 ## Machines
 
@@ -15,12 +15,12 @@ Host-specific copies live under `hosts/{laptop,desktop}/`. Shared defaults live 
 
 ## Wallpaper
 
-Light theme wallpaper is **`GreatWallStairs.png`** (not `light.png`).
+Light theme wallpaper is **`GreatWallStairs.jpg`** (not `light.png`).
 
 Canonical paths used by the installs:
 
 ```text
-~/Documents/backgrounds/GreatWallStairs.png   # light
+~/Documents/backgrounds/GreatWallStairs.jpg   # light
 ~/Documents/backgrounds/misty_mountains.jpg   # dark (theme_toggle)
 ```
 
@@ -41,7 +41,7 @@ Repo copies are under `backgrounds/`. On setup, copy them into `~/Documents/back
   systemd/user/            # optional airpods-monitor.service
   autostart/librepods.desktop
   sway/          # legacy
-backgrounds/     # GreatWallStairs.png, dark.png, misty_mountains.jpg, …
+backgrounds/     # GreatWallStairs.jpg, dark.png, misty_mountains.jpg, …
 hosts/
   laptop/        # hyprland.conf, hyprpaper (eDP-1), hyprland.lua snapshot
   desktop/       # hyprland.lua, hyprpaper (all monitors), zprofile (Intel)
@@ -247,7 +247,7 @@ cd ~/dotfiles_nord
 
 # Wallpapers used by hyprpaper + theme_toggle
 mkdir -p ~/Documents/backgrounds
-cp backgrounds/GreatWallStairs.png backgrounds/misty_mountains.jpg \
+cp backgrounds/GreatWallStairs.jpg backgrounds/misty_mountains.jpg \
    backgrounds/dark.png ~/Documents/backgrounds/
 
 # Link shared configs (back up existing first)

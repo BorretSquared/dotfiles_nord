@@ -8,7 +8,7 @@
 - **GPU:** Intel Arc A770 (`INTEL_DEBUG=noccs` for screencopy/portal DMA-BUF)
 - **Monitor:** HDMI-A-1 Acer R221Q 1920x1080 @ ~75Hz, scale **1.25**
 - **Active Hyprland config:** `~/.config/hypr/hyprland.lua` (no `hyprland.conf`)
-- **Wallpaper (live):** was `dotfiles_nord/GreatWallStairs.jpg`; standardized to `Documents/backgrounds/GreatWallStairs.png`
+- **Wallpaper (live):** was `dotfiles_nord/GreatWallStairs.jpg`; standardized to `Documents/backgrounds/GreatWallStairs.jpg`
 - **Notifier:** mako
 - **Chat:** Vesktop (Super+B)
 - **Missing package vs laptop:** `hypridle` not installed
@@ -29,7 +29,7 @@
 ## Repo state before update
 
 - Last meaningful commits: zsh/kitty/SDDM/XKB (~Apr 2026 local tree)
-- Stale wallpaper: `light.png` (byte-identical to `GreatWallStairs.png`) and hyprpaper pointing at DP-3 + light.png
+- Stale wallpaper: `light.png` (byte-identical to `GreatWallStairs.jpg`) and hyprpaper pointing at DP-3 + light.png
 - Hyprland conf lagged laptop (missing portal setup, swipe hyprexpo; still had ninjabrain binds)
 - No rofi, no dunst themes, no lua config, no host split, lots of backup files tracked
 - Untracked `GreatWallStairs.jpg` already sitting in desktop clone
@@ -59,10 +59,10 @@
 
 ## Wallpaper decision
 
-User directive: background must be **GreatWallStairs.png**, not light.png.
+User directive: background must be **GreatWallStairs.jpg**, not light.png.
 
-- `light.png` MD5 == `Documents/backgrounds/GreatWallStairs.png` (same image, wrong name)
-- Repo now ships `backgrounds/GreatWallStairs.png` and hyprpaper/light_wallpaper/theme_toggle all use that name
+- `light.png` MD5 == `Documents/backgrounds/GreatWallStairs.jpg` (same image, wrong name)
+- Repo now ships `backgrounds/GreatWallStairs.jpg` and hyprpaper/light_wallpaper/theme_toggle all use that name
 - High-res 3840x2160 JPEG retained as `backgrounds/GreatWallStairs.jpg` for optional use
 
 ## Backup location
@@ -75,7 +75,7 @@ Created before any edits:
 ## Recommended follow-ups (not done automatically)
 
 1. Install `hypridle` on desktop and wire `start-lock-services.sh`
-2. On laptop: copy `GreatWallStairs.png` into `Documents/backgrounds/` and update live hyprpaper when ready
+2. On laptop: copy `GreatWallStairs.jpg` into `Documents/backgrounds/` and update live hyprpaper when ready
 3. Decide single notifier (mako vs dunst) long-term
 4. Symlink desktop configs into the repo like laptop for easier two-way sync
 5. Commit & push this repo update when you are happy with the tree

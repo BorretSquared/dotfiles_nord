@@ -1,6 +1,6 @@
 #!/bin/bash
 # Toggle Nord light/dark across hyprpaper, waybar, kitty, rofi, VS Code, etc.
-# Light wallpaper: GreatWallStairs.png
+# Light wallpaper: GreatWallStairs.jpg
 # Dark wallpaper:  misty_mountains.jpg
 
 set -u
@@ -24,7 +24,7 @@ declare -A PATHS=(
 # [light_value]=[dark_value]
 declare -A REPLACEMENTS=(
     # Wallpapers (filename only — works with any path prefix)
-    ["GreatWallStairs.png"]="misty_mountains.jpg"
+    ["GreatWallStairs.jpg"]="misty_mountains.jpg"
     # VS Code
     ['"Nord Light"']='"Nord"'
     # Equibop / Vesktop-style dark mode flag
