@@ -1,0 +1,12 @@
+[Unit]
+Description=AirPods Auto-Profile Switcher
+After=bluetooth.target pipewire.service wireplumber.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/dbus-monitor --system "type='signal',interface='org.freedesktop.DBus.Properties',member='PropertiesChanged',path_namespace='/org/bluez'"
+StandardOutput=file:/tmp/bluetooth-monitor.log
+Restart=always
+
+[Install]
+WantedBy=default.target

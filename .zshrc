@@ -328,3 +328,13 @@ EOT
     echo "Switched to Light Theme."
 }
 alias mcsr-offline="cd \"/home/borret/Documents/dev/MCSR Ranked Scraper\" && source .venv/bin/activate && python runner.py"
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/borret/.local/bin:$PATH"
+
+# >>> grok installer >>>
+export PATH="$HOME/.grok/bin:$PATH"
+fpath=(~/.grok/completions/zsh $fpath)
+autoload -Uz compinit && compinit -C
+# <<< grok installer <<<

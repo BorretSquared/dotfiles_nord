@@ -1,0 +1,6 @@
+# Intel Arc A770 - Disable CCS compression for screensharing compatibility
+export INTEL_DEBUG=noccs
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/borret/.local/bin:$PATH"

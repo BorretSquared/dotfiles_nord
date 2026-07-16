@@ -1,0 +1,72 @@
+#!/bin/bash
+# AirPods Pro 2 Quick Fix Script
+# Run this if your AirPods connect but don't play sound
+
+AIRPODS_MAC="6C:12:70:30:6C:B8"
+CARD_NAME="bluez_card.6C_12_70_30_6C_B8"
+
+echo "🎧 AirPods Pro 2 Audio Fix"
+echo "=========================="
+
+# Check if connected
+if ! bluetoothctl info "$AIRPODS_MAC" | grep -q "Connected: yes"; then
+    echo "❌ AirPods are not connected. Please connect them first."
+    echo "   Run: bluetoothctl connect $AIRPODS_MAC"
+    exit 1
+fi
+
+echo "✓ AirPods are connected"
+
+# Wait for card to appear
+echo "⏳ Waiting for audio card..."
+sleep 2
+
+# Check if card exists
+if ! pactl list cards short | grep -q "$CARD_NAME"; then
+    echo "❌ Audio card not detected. Restarting WirePlumber..."
+    systemctl --user restart wireplumber
+    sleep 3
+fi
+
+if pactl list cards short | grep -q "$CARD_NAME"; then
+    echo "✓ Audio card detected"
+    
+    # Get current profile
+    CURRENT_PROFILE=$(pactl list cards | grep -A 50 "$CARD_NAME" | grep "Active Profile" | awk '{print $3}')
+    echo "   Current profile: $CURRENT_PROFILE"
+    
+    # Switch to A2DP if not already
+    if [ "$CURRENT_PROFILE" != "a2dp-sink" ]; then
+        echo "🔄 Switching to A2DP profile..."
+        pactl set-card-profile "$CARD_NAME" a2dp-sink
+        sleep 1
+    fi
+    
+    # Set as default sink
+    # Fixed: Search for sink using MAC address (colons) instead of card name (underscores)
+    SINK=$(pactl list sinks short | grep "bluez_output" | grep "6C_12_70_30_6C_B8" | awk '{print $2}')
+    if [ -n "$SINK" ]; then
+        pactl set-default-sink "$SINK"
+        echo "✓ AirPods set as default audio output"
+        echo "   Sink: $SINK"
+    else
+        echo "⚠️  Could not find sink for AirPods to set as default."
+    fi
+    
+    # Test audio
+    echo ""
+    echo "🔊 Testing audio playback..."
+    if [ -f /usr/share/sounds/freedesktop/stereo/complete.oga ]; then
+        paplay /usr/share/sounds/freedesktop/stereo/complete.oga
+        echo "✓ Audio test complete!"
+    fi
+    
+    echo ""
+    echo "✅ All done! Your AirPods should now be working."
+    echo "   Profile: a2dp-sink (AAC codec)"
+else
+    echo "❌ Failed to detect audio card. Try:"
+    echo "   1. Disconnect and reconnect your AirPods"
+    echo "   2. Restart audio services: systemctl --user restart pipewire wireplumber"
+    exit 1
+fi

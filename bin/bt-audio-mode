@@ -1,0 +1,166 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/wireplumber/wireplumber.conf.d"
+RANGE_CONF="$CONF_DIR/51-bluetooth-range.conf"
+QUALITY_CONF="$CONF_DIR/51-bluetooth-quality.conf"
+STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/bt-audio-mode"
+
+usage() {
+  cat <<'EOF'
+Usage: bt-audio-mode [range|quality|status]
+
+  range    Use SBC codec for better distance/stability (slightly lower quality)
+  quality  Use AAC codec for best sound (shorter range, more drop-prone)
+  status   Show current mode and active codec
+
+System-level range tweaks (USB power, reconnect policy) require a one-time:
+  bt-audio-mode system-setup
+EOF
+}
+
+find_bt_card() {
+  pactl list cards short 2>/dev/null | awk '/bluez_card\./ { print $2; exit }'
+}
+
+apply_profile() {
+  local profile="$1"
+  local card
+  card="$(find_bt_card)" || true
+  if [[ -z "${card:-}" ]]; then
+    echo "No Bluetooth audio device connected."
+    return 0
+  fi
+  if pactl set-card-profile "$card" "$profile" 2>/dev/null; then
+    echo "Active profile: $profile"
+  else
+    echo "Could not switch profile to $profile (device may be busy)."
+    return 1
+  fi
+}
+
+enable_range_conf() {
+  mv -f "$QUALITY_CONF" "$QUALITY_CONF.disabled" 2>/dev/null || true
+  if [[ ! -f "$RANGE_CONF" ]]; then
+    echo "Missing $RANGE_CONF"
+    exit 1
+  fi
+  mkdir -p "$(dirname "$STATE_FILE")"
+  echo range >"$STATE_FILE"
+}
+
+enable_quality_conf() {
+  mv -f "$RANGE_CONF" "$RANGE_CONF.disabled" 2>/dev/null || true
+  if [[ -f "$QUALITY_CONF.disabled" ]]; then
+    mv -f "$QUALITY_CONF.disabled" "$QUALITY_CONF"
+  fi
+  if [[ ! -f "$QUALITY_CONF" ]]; then
+    # Restore range conf if quality file was never installed
+    mv -f "$RANGE_CONF.disabled" "$RANGE_CONF" 2>/dev/null || true
+    echo "Missing quality config; kept range mode."
+    exit 1
+  fi
+  mkdir -p "$(dirname "$STATE_FILE")"
+  echo quality >"$STATE_FILE"
+}
+
+restart_wireplumber() {
+  systemctl --user restart wireplumber.service 2>/dev/null || true
+  sleep 0.5
+}
+
+show_status() {
+  local card profile
+  card="$(find_bt_card)" || true
+  if [[ -f "$STATE_FILE" ]]; then
+    echo "Configured mode: $(cat "$STATE_FILE")"
+  elif [[ -f "$RANGE_CONF" ]]; then
+    echo "Configured mode: range"
+  elif [[ -f "$QUALITY_CONF" ]]; then
+    echo "Configured mode: quality"
+  else
+    echo "Configured mode: unknown"
+  fi
+
+  if [[ -n "${card:-}" ]]; then
+    profile="$(pactl list cards 2>/dev/null | awk -v c="$card" '
+      $0 ~ "Name: " c { found=1 }
+      found && /Active Profile:/ { print $3; exit }
+    ')"
+    echo "Connected device: $card"
+    echo "Active codec profile: ${profile:-unknown}"
+  else
+    echo "No Bluetooth audio device connected."
+  fi
+}
+
+system_setup() {
+  if [[ "${EUID:-$(id -u)}" -ne 0 ]]; then
+    exec sudo "$0" system-setup
+  fi
+
+  local udev_rule="/etc/udev/rules.d/99-intel-bt-no-autosuspend.rules"
+  cat >"$udev_rule" <<'EOF'
+# Keep Intel USB Bluetooth awake for better range and fewer dropouts
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="8087", ATTR{idProduct}=="0032", ATTR{power/control}="on", ATTR{power/autosuspend_delay_ms}="-1"
+EOF
+  udevadm control --reload-rules
+  udevadm trigger --subsystem-match=usb
+
+  for p in /sys/class/bluetooth/hci0/device/power/control \
+           /sys/class/bluetooth/hci0/device/power/autosuspend_delay_ms; do
+    [[ -e "${p%/*}/control" ]] || continue
+    echo on >/sys/class/bluetooth/hci0/device/power/control 2>/dev/null || true
+    echo -1 >/sys/class/bluetooth/hci0/device/power/autosuspend_delay_ms 2>/dev/null || true
+    break
+  done
+
+  local main_conf="/etc/bluetooth/main.conf"
+  for kv in \
+    "FastConnectable = true" \
+    "ReconnectAttempts=10" \
+    "ReconnectIntervals=1,2,4,8,16,32,64,128"; do
+    key="${kv%%=*}"
+    key="${key// /}"
+    if grep -q "^${key}" "$main_conf"; then
+      sed -i "s/^#\\?${key}.*/${kv}/" "$main_conf"
+    else
+      printf '\n%s\n' "$kv" >>"$main_conf"
+    fi
+  done
+
+  btmgmt -i hci0 fast-conn on 2>/dev/null || true
+  systemctl restart bluetooth.service
+
+  echo "System Bluetooth range tweaks applied."
+  echo "  - USB autosuspend disabled for Intel adapter"
+  echo "  - FastConnectable + aggressive reconnect enabled"
+}
+
+case "${1:-status}" in
+  range)
+    enable_range_conf
+    restart_wireplumber
+    apply_profile a2dp-sink-sbc
+    echo "Range mode enabled (SBC)."
+    ;;
+  quality)
+    enable_quality_conf
+    restart_wireplumber
+    apply_profile a2dp-sink
+    echo "Quality mode enabled (AAC)."
+    ;;
+  status)
+    show_status
+    ;;
+  system-setup)
+    system_setup
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 1
+    ;;
+esac

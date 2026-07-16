@@ -1,0 +1,8 @@
+
+@theme "~/.config/rofi/nord-light.rasi"
+configuration {
+    /* Your other settings... */
+    
+    /* Only search the App Name and Generic Name. Ignore Exec/Comments. */
+    drun-match-fields: "name,generic";
+}

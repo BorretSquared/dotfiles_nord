@@ -447,6 +447,31 @@ Rectangle {
                 KeyNavigation.tab: name
             }
         }
+    function selectFavoredLayout() {
+        if (keyboard.layouts && keyboard.layouts.length > 0) {
+            for (var i = 0; i < keyboard.layouts.length; i++) {
+                var layout = keyboard.layouts[i];
+                if (layout.shortName === "apt" || layout.shortName === "apt_v3") {
+                    keyboard.currentLayout = i;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    Timer {
+        id: layoutTimer
+        interval: 50
+        running: true
+        repeat: true
+        property int attempts: 0
+        onTriggered: {
+            attempts++;
+            if (attempts > 20 || selectFavoredLayout()) {
+                layoutTimer.stop();
+            }
+        }
     }
 
     Component.onCompleted: {
@@ -454,5 +479,9 @@ Rectangle {
             name.focus = true
         else
             password.focus = true
+
+        if (selectFavoredLayout()) {
+            layoutTimer.stop();
+        }
     }
 }

@@ -1,6 +1,10 @@
 #!/bin/bash
+# Toggle Nord light/dark across hyprpaper, waybar, kitty, rofi, VS Code, etc.
+# Light wallpaper: GreatWallStairs.png
+# Dark wallpaper:  misty_mountains.jpg
 
-# Configuration paths
+set -u
+
 declare -A PATHS=(
     [HYPRPAPER]="$HOME/.config/hypr/hyprpaper.conf"
     [VSCODE]="$HOME/.config/Code/User/settings.json"
@@ -11,18 +15,19 @@ declare -A PATHS=(
     [ROFI]="$HOME/.config/rofi/config.rasi"
     [PRISM]="$HOME/.local/share/PrismLauncher/prismlauncher.cfg"
     [HYPRLAND]="$HOME/.config/hypr/hyprland.conf"
+    [HYPRLAND_LUA]="$HOME/.config/hypr/hyprland.lua"
     [DUNST]="$HOME/.config/dunst/dunstrc"
     [DUNST_LIGHT]="$HOME/.config/dunst/dunstrc.light"
     [DUNST_DARK]="$HOME/.config/dunst/dunstrc.dark"
 )
 
-# Theme definitions: [light_value]=[dark_value]
+# [light_value]=[dark_value]
 declare -A REPLACEMENTS=(
-    # Wallpapers
-    ["GreatWallStairs.jpg"]="misty_mountains.jpg"
+    # Wallpapers (filename only — works with any path prefix)
+    ["GreatWallStairs.png"]="misty_mountains.jpg"
     # VS Code
     ['"Nord Light"']='"Nord"'
-    # Equibop
+    # Equibop / Vesktop-style dark mode flag
     ['"DARK_MODE": false']='"DARK_MODE": true'
     # Waybar colors
     ["@define-color window_bg #c9d6e5;"]="@define-color window_bg #3B4252;"
@@ -38,66 +43,77 @@ declare -A REPLACEMENTS=(
     ["nord-light.rasi"]="nord-dark.rasi"
     # Prism Launcher
     ["ApplicationTheme=light"]="ApplicationTheme=dark"
-    # Hyprland
+    # Hyprland classic conf
     ["env = GTK_THEME,Adwaita:light"]="env = GTK_THEME,Adwaita:dark"
     ["env = QT_STYLE_OVERRIDE,Adwaita-Light"]="env = QT_STYLE_OVERRIDE,Adwaita-Dark"
     ["env = COLOR_SCHEME,prefer-light"]="env = COLOR_SCHEME,prefer-dark"
     ["col.active_border = rgba(5e81acff)"]="col.active_border = rgba(88c0d0ff)"
     ["col.inactive_border = rgba(d8dee9ff)"]="col.inactive_border = rgba(4c566aff)"
+    # Hyprland lua (desktop)
+    ['hl.env("GTK_THEME", "Adwaita:light")']='hl.env("GTK_THEME", "Adwaita:dark")'
+    ['hl.env("QT_STYLE_OVERRIDE", "Adwaita-Light")']='hl.env("QT_STYLE_OVERRIDE", "Adwaita-Dark")'
+    ['hl.env("COLOR_SCHEME", "prefer-light")']='hl.env("COLOR_SCHEME", "prefer-dark")'
+    ['["col.active_border"] = "rgba(5e81acff)"']='["col.active_border"] = "rgba(88c0d0ff)"'
+    ['["col.inactive_border"] = "rgba(d8dee9ff)"']='["col.inactive_border"] = "rgba(4c566aff)"'
 )
 
-# Detect current theme
 is_light_theme() {
-    grep -q "GreatWallStairs.jpg" "${PATHS[HYPRPAPER]}"
+    # Prefer explicit light wallpaper; also treat legacy .jpg path as light
+    grep -qE 'GreatWallStairs\.(png|jpg)' "${PATHS[HYPRPAPER]}" 2>/dev/null
 }
 
-# Perform replacements
 toggle_theme() {
     local light_to_dark=$1
-    
+    local targets=(
+        "${PATHS[HYPRPAPER]}"
+        "${PATHS[VSCODE]}"
+        "${PATHS[EQUIBOP]}"
+        "${PATHS[WAYBAR]}"
+        "${PATHS[KITTY]}"
+        "${PATHS[ROFI]}"
+        "${PATHS[PRISM]}"
+        "${PATHS[HYPRLAND]}"
+        "${PATHS[HYPRLAND_LUA]}"
+    )
+
     for light in "${!REPLACEMENTS[@]}"; do
         dark="${REPLACEMENTS[$light]}"
-        
         if [ "$light_to_dark" = true ]; then
-            # Light → Dark
-            sed -i "s|$light|$dark|g" "${PATHS[HYPRPAPER]}" "${PATHS[VSCODE]}" "${PATHS[EQUIBOP]}" \
-                "${PATHS[WAYBAR]}" "${PATHS[KITTY]}" "${PATHS[ROFI]}" "${PATHS[PRISM]}" "${PATHS[HYPRLAND]}" 2>/dev/null
+            sed -i "s|$light|$dark|g" "${targets[@]}" 2>/dev/null || true
         else
-            # Dark → Light
-            sed -i "s|$dark|$light|g" "${PATHS[HYPRPAPER]}" "${PATHS[VSCODE]}" "${PATHS[EQUIBOP]}" \
-                "${PATHS[WAYBAR]}" "${PATHS[KITTY]}" "${PATHS[ROFI]}" "${PATHS[PRISM]}" "${PATHS[HYPRLAND]}" 2>/dev/null
+            sed -i "s|$dark|$light|g" "${targets[@]}" 2>/dev/null || true
         fi
     done
 }
 
-# Restart services
 restart_services() {
     local theme=$1
-    
-    # Hyprpaper
-    killall hyprpaper 2>/dev/null
+
+    killall hyprpaper 2>/dev/null || true
     hyprpaper &
-    
-    # Waybar
-    killall waybar 2>/dev/null
+
+    killall waybar 2>/dev/null || true
     waybar &
-    
-    # Kitty (reload config)
-    killall -SIGUSR1 kitty 2>/dev/null
-    
-    # Dunst
+
+    killall -SIGUSR1 kitty 2>/dev/null || true
+
+    # Notifications: prefer dunst when themed configs exist, else mako
     if [ "$theme" = "dark" ]; then
-        cp "${PATHS[DUNST_DARK]}" "${PATHS[DUNST]}"
-        /bin/zsh -lc "source '${PATHS[ZSHRC]}' && ash-theme"
+        [ -f "${PATHS[DUNST_DARK]}" ] && cp "${PATHS[DUNST_DARK]}" "${PATHS[DUNST]}" 2>/dev/null || true
+        /bin/zsh -lc "source '${PATHS[ZSHRC]}' && ash-theme" 2>/dev/null || true
     else
-        cp "${PATHS[DUNST_LIGHT]}" "${PATHS[DUNST]}"
-        /bin/zsh -lc "source '${PATHS[ZSHRC]}' && light-theme"
+        [ -f "${PATHS[DUNST_LIGHT]}" ] && cp "${PATHS[DUNST_LIGHT]}" "${PATHS[DUNST]}" 2>/dev/null || true
+        /bin/zsh -lc "source '${PATHS[ZSHRC]}' && light-theme" 2>/dev/null || true
     fi
-    killall mako dunst 2>/dev/null
-    dunst &
+
+    killall mako dunst 2>/dev/null || true
+    if [ -f "${PATHS[DUNST]}" ] && command -v dunst >/dev/null 2>&1; then
+        dunst &
+    else
+        mako &
+    fi
 }
 
-# Main logic
 if is_light_theme; then
     echo "Switching to Dark Theme..."
     toggle_theme true

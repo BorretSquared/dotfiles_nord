@@ -1,0 +1,148 @@
+# Dunst configuration - Nord Light Theme
+# Matches your Hyprland rice with smooth animations
+
+[global]
+    ### Display ###
+    monitor = 0
+    follow = mouse
+    
+    ### Geometry ###
+    width = (0, 350)
+    height = 150
+    origin = top-right
+    offset = 20x46
+    
+    scale = 0
+    notification_limit = 5
+    
+    ### Progress bar ###
+    progress_bar = true
+    progress_bar_height = 8
+    progress_bar_frame_width = 1
+    progress_bar_min_width = 300
+    progress_bar_max_width = 350
+    progress_bar_corner_radius = 3
+    
+    # Progress bar colors (Nord Light)
+    highlight = "#5E81AC"
+    
+    ### Appearance ###
+    indicate_hidden = yes
+    separator_height = 1
+    padding = 15
+    horizontal_padding = 15
+    text_icon_padding = 10
+    gap_size = 6
+    
+    ### Border/Frame ###
+    frame_width = 3
+    frame_color = "#5E81AC"
+    separator_color = "#D8DEE9"
+    
+    ### Corner Radius ###
+    corner_radius = 6
+    
+    ### Transparency ###
+    transparency = 0
+    
+    ### Shadow (Nord Light with cyan tint) ###
+    shadow = yes
+    shadow_offset = 2x4
+    shadow_radius = 8
+    shadow_color = "#5E81ACCC"
+    
+    # Sort messages by urgency
+    sort = yes
+    
+    ### Text ###
+    font = JetBrains Mono 11
+    line_height = 0
+    markup = full
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    vertical_alignment = center
+    show_age_threshold = 60
+    ellipsize = middle
+    ignore_newline = no
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = yes
+    
+    ### Icons ###
+    enable_recursive_icon_lookup = true
+    icon_theme = "Papirus-Light, Adwaita"
+    icon_position = left
+    min_icon_size = 32
+    max_icon_size = 64
+    icon_path = /usr/share/icons/Papirus-Light/48x48/status:/usr/share/icons/Papirus-Light/48x48/devices:/usr/share/icons/Papirus-Light/48x48/apps
+    
+    ### History ###
+    sticky_history = yes
+    history_length = 20
+    
+    ### Misc/Advanced ###
+    dmenu = /usr/bin/rofi -dmenu -p dunst:
+    browser = /usr/bin/xdg-open
+    always_run_script = true
+    title = Dunst
+    class = Dunst
+    ignore_dbusclose = false
+    
+    ### Wayland ###
+    force_xwayland = false
+    
+    ### Mouse ###
+    mouse_left_click = do_action, close_current
+    mouse_middle_click = close_all
+    mouse_right_click = close_current
+
+[experimental]
+    per_monitor_dpi = false
+
+[urgency_low]
+    # Nord Light Theme - Consistent styling
+    background = "#ECEFF4"
+    foreground = "#2E3440"
+    frame_color = "#5E81AC"
+    timeout = 3
+
+[urgency_normal]
+    # Nord Light Theme - Consistent styling
+    background = "#ECEFF4"
+    foreground = "#2E3440"
+    frame_color = "#5E81AC"
+    timeout = 5
+
+[urgency_critical]
+    # Nord Light Theme - Critical priority (Aurora red text)
+    background = "#ECEFF4"
+    foreground = "#BF616A"
+    frame_color = "#BF616A"
+    timeout = 0
+
+# Volume notifications
+[volume]
+    appname = "volume"
+    urgency = low
+    frame_color = "#5E81AC"
+    timeout = 2
+
+# Brightness notifications
+[brightness]
+    appname = "brightness"
+    urgency = low
+    frame_color = "#5E81AC"
+    timeout = 2
+
+# Battery notifications
+[battery]
+    appname = "battery"
+    urgency = normal
+    frame_color = "#BF616A"
+    timeout = 8
+
+# Screenshot notifications
+[screenshot]
+    appname = "screenshot"
+    urgency = low
+    timeout = 3

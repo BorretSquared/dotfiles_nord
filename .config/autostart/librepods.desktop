@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=LibrePods
+Comment=AirPods tray (ANC, ear detection, battery) — provides AirPodsTrayApp config
+Exec=librepods
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+StartupNotify=false
+Terminal=false
+Categories=Audio;Utility;

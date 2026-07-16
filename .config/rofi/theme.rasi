@@ -1,0 +1,2 @@
+/* Default theme pointer — theme_toggle switches nord-light/nord-dark via config.rasi */
+@import "nord-light.rasi"

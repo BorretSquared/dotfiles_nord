@@ -1,0 +1,6 @@
+/* Nord Light Rofi */
+* {
+	background: #E5E9F0;
+	foreground: #2E3440;
+	selected: #81A1C1;
+}

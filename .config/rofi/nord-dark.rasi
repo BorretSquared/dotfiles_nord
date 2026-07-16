@@ -1,0 +1,286 @@
+/*
+ * Nord Dark Theme for Rofi
+ * Consistent with Waybar Nord Dark Theme
+ * 
+ * Nord Color Palette:
+ * - Polar Night: #2E3440, #3B4252, #434C5E, #4C566A (background colors)
+ * - Snow Storm: #D8DEE9, #E5E9F0, #ECEFF4 (text colors) 
+ * - Frost: #8FBCBB, #88C0D0, #81A1C1, #5E81AC (accent colors)
+ * - Aurora: #BF616A, #D08770, #EBCB8B, #A3BE8C, #B48EAD (semantic colors)
+ */
+
+* {
+    /* Define colors */
+    bg-color: #2E3440;
+    bg-alt: #3B4252;
+    bg-selected: #88C0D0;
+    fg-color: #ECEFF4;
+    fg-alt: #D8DEE9;
+    border-color: #4C566A;
+    separatorcolor: #4C566A;
+    urgent-color: #BF616A;
+    active-color: #A3BE8C;
+    
+    /* Global properties */
+    background-color: transparent;
+    text-color: @fg-color;
+    
+    font: "JetBrains Mono 12";
+    border: 0;
+    margin: 0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    background-color: @bg-color;
+    border: 1px solid;
+    border-color: @border-color;
+    border-radius: 6px;
+    width: 600px;
+    location: center;
+    anchor: center;
+    transparency: "screenshot";
+    padding: 0px;
+}
+
+mainbox {
+    background-color: transparent;
+    children: [inputbar, message, listview];
+    spacing: 4px;
+    padding: 6px;
+}
+
+inputbar {
+    background-color: @bg-alt;
+    text-color: @fg-color;
+    border: 1px solid;
+    border-color: @border-color;
+    border-radius: 6px;
+    padding: 4px 8px;
+    spacing: 0px;
+    children: [prompt, textbox-prompt-colon, entry, case-indicator];
+}
+
+prompt {
+    background-color: transparent;
+    text-color: @fg-color;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+    font: "JetBrains Mono Bold 12";
+}
+
+textbox-prompt-colon {
+    background-color: transparent;
+    text-color: @fg-color;
+    expand: false;
+    str: ":";
+    margin: 0px 0.3em 0em 0em;
+    vertical-align: 0.5;
+}
+
+entry {
+    background-color: transparent;
+    text-color: @fg-color;
+    placeholder-color: @fg-alt;
+    expand: true;
+    horizontal-align: 0;
+    placeholder: "Type to filter...";
+    cursor: text;
+    blink: true;
+}
+
+case-indicator {
+    background-color: transparent;
+    text-color: @fg-alt;
+    vertical-align: 0.5;
+    horizontal-align: 0.5;
+}
+
+listview {
+    background-color: transparent;
+    columns: 1;
+    lines: 8;
+    cycle: true;
+    dynamic: true;
+    scrollbar: true;
+    layout: vertical;
+    reverse: false;
+    fixed-height: true;
+    fixed-columns: true;
+    spacing: 2px;
+    padding: 0px;
+}
+
+element {
+    background-color: transparent;
+    text-color: @fg-color;
+    orientation: horizontal;
+    border-radius: 6px;
+    padding: 4px 8px;
+    spacing: 4px;
+    border: 0;
+    cursor: pointer;
+}
+
+element normal.normal {
+    background-color: transparent;
+    text-color: @fg-color;
+}
+
+element normal.urgent {
+    background-color: @urgent-color;
+    text-color: @bg-color;
+}
+
+element normal.active {
+    background-color: @active-color;
+    text-color: @bg-color;
+}
+
+element selected.normal {
+    background-color: @bg-selected;
+    text-color: @bg-color;
+    border: 0px;
+}
+
+element selected.urgent {
+    background-color: @urgent-color;
+    text-color: @bg-color;
+}
+
+element selected.active {
+    background-color: @active-color;
+    text-color: @bg-color;
+}
+
+element alternate.normal {
+    background-color: transparent;
+    text-color: @fg-color;
+}
+
+element alternate.urgent {
+    background-color: @urgent-color;
+    text-color: @bg-color;
+}
+
+element alternate.active {
+    background-color: @active-color;
+    text-color: @bg-color;
+}
+
+element-icon {
+    background-color: transparent;
+    text-color: inherit;
+    size: 24px;
+    cursor: inherit;
+}
+
+element-text {
+    background-color: transparent;
+    text-color: inherit;
+    cursor: inherit;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+}
+
+scrollbar {
+    width: 4px;
+    border: 0;
+    handle-color: @border-color;
+    handle-width: 4px;
+    padding: 0;
+    margin: 0 4px 0 0;
+}
+
+message {
+    background-color: @bg-alt;
+    border: 1px solid;
+    border-color: @border-color;
+    border-radius: 6px;
+    padding: 4px;
+    margin: 0px;
+}
+
+textbox {
+    background-color: transparent;
+    text-color: @fg-color;
+    vertical-align: 0.5;
+    horizontal-align: 0.0;
+    highlight: none;
+    blink: true;
+    markup: true;
+}
+
+error-message {
+    background-color: @urgent-color;
+    border: 1px solid;
+    border-color: @urgent-color;
+    border-radius: 6px;
+    padding: 4px;
+    margin: 0px;
+}
+
+/* Mode switcher */
+mode-switcher {
+    background-color: transparent;
+    spacing: 0px;
+}
+
+button {
+    background-color: @bg-alt;
+    text-color: @fg-color;
+    border: 1px solid;
+    border-color: @border-color;
+    border-radius: 6px;
+    padding: 4px;
+    margin: 0px 2px;
+    horizontal-align: 0.5;
+    vertical-align: 0.5;
+    cursor: pointer;
+}
+
+button selected {
+    background-color: @bg-selected;
+    text-color: @bg-color;
+    border-color: @bg-selected;
+}
+
+/* Configuration overrides */
+configuration {
+    display-ssh: "SSH:";
+    display-run: "Run:";
+    display-drun: "Apps";
+    display-window: "Windows:";
+    display-combi: "Search:";
+    show-icons: false;
+    icon-theme: "Adwaita";
+    drun-display-format: "{name}";
+    disable-history: false;
+    fullscreen: false;
+    hide-scrollbar: false;
+    sidebar-mode: false;
+    hover-select: true;
+    eh: 1;
+    auto-select: false;
+    parse-hosts: true;
+    parse-known-hosts: true;
+    combi-modi: "window,drun,ssh";
+    matching: "fuzzy";
+    sort: true;
+    sorting-method: "normal";
+    case-sensitive: false;
+    cycle: true;
+    filter: "";
+    separator-style: "none";
+    hide-scrollbar: true;
+    markup-rows: false;
+    fullscreen: false;
+    fake-transparency: false;
+    dpi: -1;
+    threads: 0;
+    scrollbar-width: 4;
+    scroll-method: 0;
+    fake-background: "screenshot";
+    window-format: "{w}    {i}{c}   {t}";
+}

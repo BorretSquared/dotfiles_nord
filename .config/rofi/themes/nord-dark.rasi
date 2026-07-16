@@ -1,0 +1,6 @@
+/* Nord Dark Rofi */
+* {
+	background: #2E3440;
+	foreground: #ECEFF4;
+	selected: #88C0D0;
+}

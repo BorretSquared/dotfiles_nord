@@ -161,6 +161,7 @@
 	color: @text_white;
 }
 
+
 @keyframes blink {
 	to {
 		background-color: @light;
