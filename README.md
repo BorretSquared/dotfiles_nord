@@ -21,7 +21,7 @@ Canonical paths used by the installs:
 
 ```text
 ~/Documents/backgrounds/GreatWallStairs.jpg   # light
-~/Documents/backgrounds/misty_mountains.jpg   # dark (theme_toggle)
+~/Documents/backgrounds/Chudwig.png           # dark (theme_toggle)
 ```
 
 Repo copies are under `backgrounds/`. On setup, copy them into `~/Documents/backgrounds/`.
@@ -41,7 +41,7 @@ Repo copies are under `backgrounds/`. On setup, copy them into `~/Documents/back
   systemd/user/            # optional airpods-monitor.service
   autostart/librepods.desktop
   sway/          # legacy
-backgrounds/     # GreatWallStairs.jpg, dark.png, misty_mountains.jpg, …
+backgrounds/     # GreatWallStairs.jpg, Chudwig.png (dark), misty_mountains.jpg, …
 hosts/
   laptop/        # hyprland.conf, hyprpaper (eDP-1), hyprland.lua snapshot
   desktop/       # hyprland.lua, hyprpaper (all monitors), zprofile (Intel)
@@ -78,7 +78,7 @@ Compared live configs on **desktop** and **laptop** against this repo:
 
 ## Features
 
-- Nord light (default) / dark toggle via `theme_toggle.sh` (Super+Z on laptop conf)
+- Nord light (default) / dark toggle via `theme_toggle.sh` (**Super+Z** on laptop conf + desktop lua)
 - Waybar with weather, workspaces, audio/cpu/mem/battery
 - hyprlock + hypridle (dim → lock → DPMS)
 - APTv3 keyboard (`xkb_symbols/apt`)
@@ -247,8 +247,8 @@ cd ~/dotfiles_nord
 
 # Wallpapers used by hyprpaper + theme_toggle
 mkdir -p ~/Documents/backgrounds
-cp backgrounds/GreatWallStairs.jpg backgrounds/misty_mountains.jpg \
-   backgrounds/dark.png ~/Documents/backgrounds/
+cp backgrounds/GreatWallStairs.jpg backgrounds/Chudwig.png \
+   backgrounds/misty_mountains.jpg backgrounds/dark.png ~/Documents/backgrounds/
 
 # Link shared configs (back up existing first)
 ln -sfn "$(pwd)/.config/hypr"   ~/.config/hypr
@@ -287,7 +287,8 @@ sudo cp xkb_symbols/apt xkb_symbols/apt_de /usr/share/X11/xkb/symbols/
 - Keybinds assume **APTv3**, not QWERTY.
 - Laptop scale **1.33**, desktop **1.25** — adjust `monitor` / grim `-s` if you change DPI.
 - Theme toggle edits files in place; keep app configs writable (not read-only mounts).
-- Firefox live theme switching is still incomplete.
+- Super+Z switches wallpaper, Hyprland borders/env, waybar, kitty, rofi, mako, Vesktop/Equibop QuickCSS, VS Code (Light/Dark 2026), Prism (`bright`/`dark`), gsettings color-scheme, and Firefox `ui.systemUsesDarkTheme` (pairs with the **Nord Light & Dark** dual theme).
+- Firefox/Vesktop/Prism may need a window reopen for a full visual flip if already open.
 - Prefer committing from one machine after deliberate sync; use `hosts/` for intentional machine diffs.
 
 ## License

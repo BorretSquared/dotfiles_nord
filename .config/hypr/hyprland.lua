@@ -62,36 +62,40 @@ hl.env("INTEL_DEBUG", "noccs")
 ----------------------
 
 hl.on("hyprland.start", function()
-    -- Plugins
-    hl.exec_cmd("hyprpm reload || (hyprpm update && hyprpm reload)")
-
-    -- Delay plugin configuration slightly to ensure hyprpm has finished mounting them.
-    hl.exec_cmd([[bash -c 'sleep 2 && \
-        hyprctl keyword plugin:hyprexpo:columns 3 && \
-        hyprctl keyword plugin:hyprexpo:gaps_in 5 && \
-        hyprctl keyword plugin:hyprexpo:gaps_out 5 && \
-        hyprctl keyword plugin:hyprexpo:bg_col "rgb(111111)" && \
-        hyprctl keyword plugin:hyprexpo:workspace_method "first 1"']])
-
-    -- System services
+    -- Critical path first: env + wallpaper/bar so the desktop appears ASAP.
+    -- Do NOT restart pipewire here — systemd --user already starts it, and
+    -- restarting right at login races Hyprland's first frames for ~2s.
     hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP INTEL_DEBUG")
     hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP INTEL_DEBUG")
-    hl.exec_cmd("killall xdg-desktop-portal-hyprland xdg-desktop-portal && /usr/lib/xdg-desktop-portal-hyprland & sleep 2 && /usr/lib/xdg-desktop-portal &")
-    hl.exec_cmd("bash -c 'systemctl --user restart pipewire pipewire-pulse wireplumber'")
-    hl.exec_cmd("pipewire")
-    hl.exec_cmd("wireplumber")
-    hl.exec_cmd("pipewire-pulse")
 
-    -- UI and applications
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("waybar")
     hl.exec_cmd("mako")
 
-    -- Custom scripts
+    -- Portals: ensure xdph is up without blocking first paint
+    hl.exec_cmd([[bash -c '
+        systemctl --user start xdg-desktop-portal-hyprland.service xdg-desktop-portal.service 2>/dev/null \
+          || (killall xdg-desktop-portal-hyprland xdg-desktop-portal 2>/dev/null;
+              /usr/lib/xdg-desktop-portal-hyprland &
+              sleep 1;
+              /usr/lib/xdg-desktop-portal &)
+    ']])
+
+    -- Plugins: defer so they never compete with first frame / DRM init
+    hl.exec_cmd([[bash -c '
+        sleep 3
+        hyprpm reload || (hyprpm update && hyprpm reload)
+        sleep 1
+        hyprctl keyword plugin:hyprexpo:columns 3
+        hyprctl keyword plugin:hyprexpo:gaps_in 5
+        hyprctl keyword plugin:hyprexpo:gaps_out 5
+        hyprctl keyword plugin:hyprexpo:bg_col "rgb(111111)"
+        hyprctl keyword plugin:hyprexpo:workspace_method "first 1"
+    ']])
+
+    -- Non-critical background services
     hl.exec_cmd('bash -c "while true; do ~/.config/hypr/scripts/battery_notify.sh; sleep 300; done"')
     hl.exec_cmd("~/.local/bin/start-lock-services.sh")
-
-    -- KDE Connect
     hl.exec_cmd("/usr/bin/kdeconnectd")
     hl.exec_cmd("/usr/bin/kdeconnect-indicator")
 end)
@@ -140,6 +144,9 @@ hl.config({
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo = true,
+        disable_splash_rendering = true,
+        -- Solid Nord-light fill until hyprpaper paints — avoids black/TTY flash
+        background_color = "0xeceff4",
         enable_anr_dialog = false
     },
     dwindle = {
@@ -262,6 +269,7 @@ hl.bind(mainMod .. " + SHIFT + S", hl.dsp.exec_cmd('grim -s 1.33 -g "$(slurp)" -
 
 -- Utilities
 hl.bind(mainMod .. " + X",      hl.dsp.exec_cmd("~/.config/hypr/scripts/toggle_screen_timeout.sh"))
+hl.bind(mainMod .. " + Z",      hl.dsp.exec_cmd("~/.config/hypr/scripts/theme_toggle.sh"))
 hl.bind(mainMod .. " + SPACE",  hl.dsp.exec_cmd("~/.config/hypr/scripts/keyboard_layout_notify.sh"))
 hl.bind(mainMod .. " + A",      hl.dsp.exec_cmd("hyprlock --grace 0"))
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd("~/.config/hypr/scripts/power_menu.sh"))

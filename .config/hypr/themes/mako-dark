@@ -1,4 +1,4 @@
-# Mako — Nord Light (matches Waybar)
+# Mako — Nord Dark (matches Waybar)
 
 anchor=top-right
 margin=20
@@ -7,19 +7,19 @@ padding=15
 width=350
 height=150
 
-background-color=#ECEFF4
-text-color=#2E3440
-border-color=#5E81AC
+background-color=#2E3440
+text-color=#ECEFF4
+border-color=#88C0D0
 border-size=2
 border-radius=6
 
-progress-color=over #5E81AC
+progress-color=over #88C0D0
 
 font=JetBrains Mono 11
 format=<b>%s</b>\n%b
 text-alignment=left
 
-icon-path=/usr/share/icons/Papirus-Light
+icon-path=/usr/share/icons/Papirus-Dark
 max-icon-size=64
 icon-location=left
 
@@ -33,11 +33,11 @@ history=1
 group-by=app-name
 
 [urgency=low]
-border-color=#5E81AC
+border-color=#88C0D0
 default-timeout=3000
 
 [urgency=normal]
-border-color=#5E81AC
+border-color=#88C0D0
 default-timeout=5000
 
 [urgency=critical]
@@ -46,11 +46,11 @@ text-color=#BF616A
 default-timeout=0
 
 [app-name="volume"]
-border-color=#5E81AC
+border-color=#88C0D0
 default-timeout=2000
 
 [app-name="brightness"]
-border-color=#5E81AC
+border-color=#88C0D0
 default-timeout=2000
 
 [app-name="battery"]
@@ -58,5 +58,5 @@ border-color=#BF616A
 default-timeout=8000
 
 [app-name="theme"]
-border-color=#5E81AC
+border-color=#88C0D0
 default-timeout=2500
