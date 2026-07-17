@@ -183,25 +183,24 @@ apply_kitty() {
     local theme_file="${HOME}/.config/kitty/nord-${mode}.conf"
     [[ -f "$theme_file" && -f "$KITTY_CONF" ]] || return 0
 
-    # Sync key colors into kitty.conf (so reload picks them up)
-    local fg bg sfg sbg cursor
-    if [[ "$mode" == "dark" ]]; then
-        fg="#D8DEE9"; bg="#2E3440"; sfg="#D8DEE9"; sbg="#4C566A"; cursor="#D8DEE9"
-    else
-        fg="#2E3440"; bg="#E5E9F0"; sfg="#2E3440"; sbg="#D8DEE9"; cursor="#2E3440"
-    fi
+    # Sync every color key from nord-{light,dark}.conf into kitty.conf.
+    # (Previously only fg/bg changed, so yellow/magenta stayed unreadable on light.)
+    local key val
+    while read -r key val; do
+        [[ -z "${key:-}" || "$key" == \#* ]] && continue
+        case "$key" in
+            foreground|background|cursor|cursor_text_color|selection_foreground|selection_background|color[0-9]|color1[0-5])
+                if grep -qE "^${key}[[:space:]]" "$KITTY_CONF" 2>/dev/null; then
+                    sed -i -E "s|^${key}[[:space:]]+.*|${key} ${val}|" "$KITTY_CONF"
+                else
+                    # Append missing keys near the end of the color section
+                    printf '%s %s\n' "$key" "$val" >>"$KITTY_CONF"
+                fi
+                ;;
+        esac
+    done < <(grep -E '^(foreground|background|cursor|cursor_text_color|selection_foreground|selection_background|color[0-9]+)[[:space:]]' "$theme_file")
 
-    # Replace existing assignments only (do not invent new keys mid-file comments)
-    sed -i -E \
-        -e "s|^(foreground)[[:space:]]+#?[0-9A-Fa-f]+|\1 ${fg}|" \
-        -e "s|^(background)[[:space:]]+#?[0-9A-Fa-f]+|\1 ${bg}|" \
-        -e "s|^(selection_foreground)[[:space:]]+#?[0-9A-Fa-f]+|\1 ${sfg}|" \
-        -e "s|^(selection_background)[[:space:]]+#?[0-9A-Fa-f]+|\1 ${sbg}|" \
-        -e "s|^(cursor)[[:space:]]+#?[0-9A-Fa-f]+|\1 ${cursor}|" \
-        "$KITTY_CONF"
-
-    # Live reload all kitty instances (SIGUSR1 only — do NOT use `kitty @`,
-    # which can block for many seconds if remote-control is unavailable).
+    # Live reload (SIGUSR1 only — never `kitty @`, which can hang).
     killall -SIGUSR1 kitty 2>/dev/null || true
 }
 

@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Preview kitty / terminal ANSI colors (normal + bold) for theme tuning.
+# Usage: kitty-color-test
+
+set -u
+
+names=(
+  "0 black" "1 red" "2 green" "3 yellow"
+  "4 blue" "5 magenta" "6 cyan" "7 white"
+  "8 bright-black" "9 bright-red" "10 bright-green" "11 bright-yellow"
+  "12 bright-blue" "13 bright-magenta" "14 bright-cyan" "15 bright-white"
+)
+
+echo "=== Kitty ANSI color test ==="
+echo "fg/bg sample: The quick brown fox jumps over the lazy dog. 0123456789"
+echo
+
+# System colors 0–15 as foreground
+echo "--- foreground (normal) ---"
+for i in $(seq 0 15); do
+  printf '  \e[38;5;%sm██ %s\e[0m' "$i" "${names[$i]}"
+  if (( i % 4 == 3 )); then printf '\n'; else printf '   '; fi
+done
+
+echo
+echo "--- foreground (bold) ---"
+for i in $(seq 0 15); do
+  printf '  \e[1;38;5;%sm██ %s\e[0m' "$i" "${names[$i]}"
+  if (( i % 4 == 3 )); then printf '\n'; else printf '   '; fi
+done
+
+echo
+echo "--- background blocks (fg = default) ---"
+for i in $(seq 0 15); do
+  printf '  \e[48;5;%sm %s \e[0m' "$i" "${names[$i]}"
+  if (( i % 4 == 3 )); then printf '\n'; else printf ' '; fi
+done
+
+echo
+echo "--- classic 8-color escapes (30–37 / 90–97) ---"
+for i in $(seq 0 7); do
+  code=$((30 + i))
+  bcode=$((90 + i))
+  printf '  \e[%sm normal-%s \e[0m  \e[%sm bright-%s \e[0m\n' \
+    "$code" "${names[$i]}" "$bcode" "${names[$((i + 8))]}"
+done
+
+echo
+echo "--- readability sentence per color ---"
+samples=(
+  1:error/fail 2:ok/success 3:warn/diff 4:info/link
+  5:accent/pink 6:string/cyan 7:comment-ish 11:bright-yellow 13:bright-magenta
+)
+for s in "${samples[@]}"; do
+  n=${s%%:*}
+  label=${s#*:}
+  printf '  \e[38;5;%sm[%s] git commit -m "fix %s on light/dark bg"\e[0m\n' "$n" "$label" "$label"
+done
+
+echo
+echo "Done. Toggle Super+Z and re-run to compare light vs dark."
