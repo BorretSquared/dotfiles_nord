@@ -4,7 +4,7 @@
 #
 # Covers: wallpaper, hyprland borders/env, waybar, kitty, rofi, mako,
 # vesktop (+ equibop if present), VS Code, Prism Launcher, GTK/Qt
-# color-scheme (also drives Firefox "Nord Light & Dark" dual theme).
+# color-scheme (drives Firefox "Nord Light & Dark" dual theme live via portal).
 #
 # State file: ~/.config/hypr/theme_state  (light|dark)
 # Assets:     ~/.config/hypr/themes/
@@ -338,18 +338,29 @@ apply_prism() {
 }
 
 apply_firefox() {
-    local mode=$1
-    # Firefox "Nord Light & Dark" dual theme follows OS color-scheme
-    # (gsettings). Also pin ui.systemUsesDarkTheme for reliability.
+    # Nord Light & Dark follows OS color-scheme live via xdg-desktop-portal,
+    # driven by apply_gsettings (org.gnome.desktop.interface color-scheme).
+    #
+    # Never write ui.systemUsesDarkTheme into user.js:
+    #   - 0/1 locks the scheme at startup and blocks live portal updates
+    #   - -1 can also stick as a user pref and confuse cold starts
+    # If a prior pin exists, strip it so gsettings can drive the dual theme.
     [[ -n "${FF_PREFS:-}" ]] || return 0
-    mkdir -p "$(dirname "$FF_PREFS")"
-    local value=0
-    [[ "$mode" == "dark" ]] && value=1
 
     if [[ -f "$FF_PREFS" ]] && grep -q 'ui.systemUsesDarkTheme' "$FF_PREFS" 2>/dev/null; then
-        sed -i -E "s|user_pref\(\s*\"ui\.systemUsesDarkTheme\"\s*,\s*[01]\s*\)|user_pref(\"ui.systemUsesDarkTheme\", ${value})|" "$FF_PREFS"
-    else
-        printf '\n// Managed by theme_toggle.sh (Super+Z)\nuser_pref("ui.systemUsesDarkTheme", %s);\n' "$value" >>"$FF_PREFS"
+        sed -i -E '/ui\.systemUsesDarkTheme/d; /Managed by theme_toggle\.sh.*Firefox|Managed by theme_toggle\.sh.*follow OS/d' "$FF_PREFS"
+        # Drop user.js entirely if it only held our managed pref
+        if [[ -f "$FF_PREFS" ]] && ! grep -q '[^[:space:]]' "$FF_PREFS" 2>/dev/null; then
+            rm -f "$FF_PREFS"
+        fi
+    fi
+
+    # Clear a stale pin from prefs.js only when Firefox is not running
+    # (while running it owns prefs.js and would overwrite us on shutdown).
+    if [[ -n "${FF_PROFILE_DIR:-}" && -f "${FF_PROFILE_DIR}/prefs.js" ]]; then
+        if ! pgrep -x firefox >/dev/null 2>&1; then
+            sed -i -E '/user_pref\("ui\.systemUsesDarkTheme"/d' "${FF_PROFILE_DIR}/prefs.js" 2>/dev/null || true
+        fi
     fi
 }
 
