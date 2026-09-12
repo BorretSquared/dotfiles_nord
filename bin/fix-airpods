@@ -34,11 +34,20 @@ if pactl list cards short | grep -q "$CARD_NAME"; then
     # Get current profile
     CURRENT_PROFILE=$(pactl list cards | grep -A 50 "$CARD_NAME" | grep "Active Profile" | awk '{print $3}')
     echo "   Current profile: $CURRENT_PROFILE"
-    
-    # Switch to A2DP if not already
-    if [ "$CURRENT_PROFILE" != "a2dp-sink" ]; then
-        echo "🔄 Switching to A2DP profile..."
-        pactl set-card-profile "$CARD_NAME" a2dp-sink
+
+    # Honor bt-audio-mode (Super+V): quality=AAC, range=SBC
+    MODE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/bt-audio-mode"
+    MODE="quality"
+    [[ -f "$MODE_FILE" ]] && MODE="$(cat "$MODE_FILE")"
+    if [[ "$MODE" == "range" ]]; then
+        TARGET_PROFILE="a2dp-sink-sbc"
+    else
+        TARGET_PROFILE="a2dp-sink"
+    fi
+
+    if [ "$CURRENT_PROFILE" != "$TARGET_PROFILE" ]; then
+        echo "🔄 Switching to $TARGET_PROFILE (mode: $MODE)..."
+        pactl set-card-profile "$CARD_NAME" "$TARGET_PROFILE"
         sleep 1
     fi
     

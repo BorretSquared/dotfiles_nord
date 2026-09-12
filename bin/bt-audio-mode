@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Toggle Bluetooth audio quality vs range for AirPods / A2DP headsets.
+# Super+V bound in Hyprland calls: bt-audio-mode toggle
 set -euo pipefail
 
 CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/wireplumber/wireplumber.conf.d"
@@ -8,41 +10,176 @@ STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/bt-audio-mode"
 
 usage() {
   cat <<'EOF'
-Usage: bt-audio-mode [range|quality|status]
+Usage: bt-audio-mode [toggle|range|quality|status|system-setup]
 
-  range    Use SBC codec for better distance/stability (slightly lower quality)
-  quality  Use AAC codec for best sound (shorter range, more drop-prone)
+  toggle   Switch between quality (AAC) and range (SBC)  [default for Super+V]
+  range    Use SBC for better distance/stability (slightly lower quality)
+  quality  Use AAC for best sound (default; shorter range)
   status   Show current mode and active codec
 
-System-level range tweaks (USB power, reconnect policy) require a one-time:
+System-level range tweaks (no audio quality loss):
   bt-audio-mode system-setup
+    - Disable USB autosuspend on Intel BT adapter
+    - FastConnectable + more reconnect attempts
 EOF
+}
+
+ensure_conf_templates() {
+  mkdir -p "$CONF_DIR"
+  if [[ ! -f "$QUALITY_CONF" && ! -f "$QUALITY_CONF.disabled" ]]; then
+    cat >"$QUALITY_CONF" <<'EOF'
+# Bluetooth "quality" profile: prefer AAC when available.
+
+wireplumber.settings = {
+  bluetooth.profile-preference = "quality"
+  bluetooth.autoswitch-to-headset-profile = false
+}
+
+monitor.bluez.properties = {
+  bluez5.codecs = [ aac sbc_xq sbc ]
+  bluez5.enable-sbc-xq = true
+}
+
+device.profile.priority.rules = [
+  {
+    matches = [
+      {
+        device.name = "~bluez_card.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        priorities = [
+          "a2dp-sink",
+          "a2dp-sink-sbc_xq",
+          "a2dp-sink-sbc",
+        ]
+      }
+    }
+  }
+]
+EOF
+  fi
+  if [[ ! -f "$RANGE_CONF" && ! -f "$RANGE_CONF.disabled" ]]; then
+    cat >"$RANGE_CONF.disabled" <<'EOF'
+# Bluetooth "range" profile: prefer standard SBC for better distance/stability.
+
+wireplumber.settings = {
+  bluetooth.profile-preference = "range"
+  bluetooth.autoswitch-to-headset-profile = false
+}
+
+monitor.bluez.properties = {
+  bluez5.codecs = [ sbc aac sbc_xq ]
+  bluez5.enable-sbc-xq = false
+}
+
+device.profile.priority.rules = [
+  {
+    matches = [
+      {
+        device.name = "~bluez_card.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        priorities = [
+          "a2dp-sink-sbc",
+          "a2dp-sink",
+          "a2dp-sink-sbc_xq",
+        ]
+      }
+    }
+  }
+]
+EOF
+  fi
+}
+
+current_mode() {
+  if [[ -f "$STATE_FILE" ]]; then
+    cat "$STATE_FILE"
+  elif [[ -f "$RANGE_CONF" && ! -f "$QUALITY_CONF" ]]; then
+    echo range
+  else
+    echo quality
+  fi
 }
 
 find_bt_card() {
   pactl list cards short 2>/dev/null | awk '/bluez_card\./ { print $2; exit }'
 }
 
-apply_profile() {
-  local profile="$1"
+active_codec() {
+  local profile
+  profile="$(active_profile)"
+  case "${profile:-}" in
+    a2dp-sink) echo "AAC" ;;
+    a2dp-sink-sbc) echo "SBC" ;;
+    a2dp-sink-sbc_xq) echo "SBC-XQ" ;;
+    "") echo "none" ;;
+    *) echo "${profile}" ;;
+  esac
+}
+
+active_profile() {
   local card
   card="$(find_bt_card)" || true
+  [[ -n "${card:-}" ]] || { echo ""; return; }
+  pactl list cards 2>/dev/null | awk -v c="$card" '
+    $0 ~ "Name: " c { found=1 }
+    found && /Active Profile:/ { print $3; exit }
+  '
+}
+
+apply_profile() {
+  local profile="$1"
+  local card got attempt i
+  card="$(find_bt_card)" || true
   if [[ -z "${card:-}" ]]; then
-    echo "No Bluetooth audio device connected."
+    echo "No Bluetooth audio device connected (mode will apply on next connect)."
     return 0
   fi
-  if pactl set-card-profile "$card" "$profile" 2>/dev/null; then
-    echo "Active profile: $profile"
-  else
-    echo "Could not switch profile to $profile (device may be busy)."
-    return 1
+
+  # PipeWire exposes each A2DP codec as a distinct card profile.
+  # Switching under active stream can take >1s; retry a few times.
+  for attempt in 1 2 3; do
+    pactl set-card-profile "$card" "$profile" 2>/dev/null || true
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+      sleep 0.25
+      got="$(active_profile)"
+      if [[ "$got" == "$profile" ]]; then
+        echo "Active profile: $profile"
+        return 0
+      fi
+    done
+  done
+
+  echo "Could not switch to $profile (current: ${got:-unknown}). Mode saved for next connect."
+  return 1
+}
+
+notify() {
+  local title="$1" body="$2"
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send -a "bluetooth" -u low -t 2500 \
+      -h string:x-canonical-private-synchronous:bt-audio-mode \
+      -i audio-headphones \
+      "$title" "$body" 2>/dev/null || true
   fi
 }
 
 enable_range_conf() {
-  mv -f "$QUALITY_CONF" "$QUALITY_CONF.disabled" 2>/dev/null || true
+  ensure_conf_templates
+  # Disable quality, enable range
+  if [[ -f "$QUALITY_CONF" ]]; then
+    mv -f "$QUALITY_CONF" "$QUALITY_CONF.disabled"
+  fi
+  if [[ -f "$RANGE_CONF.disabled" ]]; then
+    mv -f "$RANGE_CONF.disabled" "$RANGE_CONF"
+  fi
   if [[ ! -f "$RANGE_CONF" ]]; then
-    echo "Missing $RANGE_CONF"
+    echo "Missing $RANGE_CONF" >&2
     exit 1
   fi
   mkdir -p "$(dirname "$STATE_FILE")"
@@ -50,45 +187,70 @@ enable_range_conf() {
 }
 
 enable_quality_conf() {
-  mv -f "$RANGE_CONF" "$RANGE_CONF.disabled" 2>/dev/null || true
+  ensure_conf_templates
+  # Disable range, enable quality
+  if [[ -f "$RANGE_CONF" ]]; then
+    mv -f "$RANGE_CONF" "$RANGE_CONF.disabled"
+  fi
   if [[ -f "$QUALITY_CONF.disabled" ]]; then
     mv -f "$QUALITY_CONF.disabled" "$QUALITY_CONF"
   fi
   if [[ ! -f "$QUALITY_CONF" ]]; then
-    # Restore range conf if quality file was never installed
-    mv -f "$RANGE_CONF.disabled" "$RANGE_CONF" 2>/dev/null || true
-    echo "Missing quality config; kept range mode."
+    echo "Missing $QUALITY_CONF" >&2
     exit 1
   fi
   mkdir -p "$(dirname "$STATE_FILE")"
   echo quality >"$STATE_FILE"
 }
 
-restart_wireplumber() {
-  systemctl --user restart wireplumber.service 2>/dev/null || true
-  sleep 0.5
+# Soft-reload WirePlumber so next connect picks new priorities without
+# hard-killing the current stream if possible. Full restart only when needed.
+reload_wireplumber() {
+  # Live profile switch is enough for the current session; conf is for reconnects.
+  # Avoid systemctl restart — it briefly drops Bluetooth audio.
+  :
+}
+
+set_range() {
+  enable_range_conf
+  reload_wireplumber
+  apply_profile a2dp-sink-sbc || true
+  local codec
+  codec="$(active_codec)"
+  echo "Range mode enabled (SBC — better distance, slightly lower quality)."
+  notify "Bluetooth: Range mode" "Codec: ${codec} — better distance, slightly lower quality"
+}
+
+set_quality() {
+  enable_quality_conf
+  reload_wireplumber
+  apply_profile a2dp-sink || true
+  local codec
+  codec="$(active_codec)"
+  echo "Quality mode enabled (AAC — best sound)."
+  notify "Bluetooth: Quality mode" "Codec: ${codec} — best sound (default)"
+}
+
+do_toggle() {
+  local mode
+  mode="$(current_mode)"
+  if [[ "$mode" == "quality" ]]; then
+    set_range
+  else
+    set_quality
+  fi
 }
 
 show_status() {
-  local card profile
+  local card profile codec mode
+  mode="$(current_mode)"
+  echo "Configured mode: $mode"
   card="$(find_bt_card)" || true
-  if [[ -f "$STATE_FILE" ]]; then
-    echo "Configured mode: $(cat "$STATE_FILE")"
-  elif [[ -f "$RANGE_CONF" ]]; then
-    echo "Configured mode: range"
-  elif [[ -f "$QUALITY_CONF" ]]; then
-    echo "Configured mode: quality"
-  else
-    echo "Configured mode: unknown"
-  fi
-
   if [[ -n "${card:-}" ]]; then
-    profile="$(pactl list cards 2>/dev/null | awk -v c="$card" '
-      $0 ~ "Name: " c { found=1 }
-      found && /Active Profile:/ { print $3; exit }
-    ')"
+    profile="$(active_profile)"
+    codec="$(active_codec)"
     echo "Connected device: $card"
-    echo "Active codec profile: ${profile:-unknown}"
+    echo "Active codec profile: ${profile:-unknown} ($codec)"
   else
     echo "No Bluetooth audio device connected."
   fi
@@ -108,47 +270,64 @@ EOF
   udevadm trigger --subsystem-match=usb
 
   for p in /sys/class/bluetooth/hci0/device/power/control \
-           /sys/class/bluetooth/hci0/device/power/autosuspend_delay_ms; do
-    [[ -e "${p%/*}/control" ]] || continue
-    echo on >/sys/class/bluetooth/hci0/device/power/control 2>/dev/null || true
-    echo -1 >/sys/class/bluetooth/hci0/device/power/autosuspend_delay_ms 2>/dev/null || true
-    break
+           /sys/bus/usb/devices/*/power/control; do
+    [[ -e "$p" ]] || continue
+    # Only touch the BT adapter interface if we can identify Intel AX210
+    parent="$(dirname "$(dirname "$p")")"
+    if [[ -f "$parent/idVendor" ]]; then
+      vend="$(cat "$parent/idVendor" 2>/dev/null || true)"
+      prod="$(cat "$parent/idProduct" 2>/dev/null || true)"
+      [[ "$vend" == "8087" && "$prod" == "0032" ]] || continue
+    elif [[ "$p" == *bluetooth* ]]; then
+      :
+    else
+      continue
+    fi
+    echo on >"$(dirname "$p")/control" 2>/dev/null || true
+    echo -1 >"$(dirname "$p")/autosuspend_delay_ms" 2>/dev/null || true
   done
 
+  # Also set via class path if present
+  if [[ -e /sys/class/bluetooth/hci0/device/power/control ]]; then
+    echo on >/sys/class/bluetooth/hci0/device/power/control 2>/dev/null || true
+    echo -1 >/sys/class/bluetooth/hci0/device/power/autosuspend_delay_ms 2>/dev/null || true
+  fi
+
   local main_conf="/etc/bluetooth/main.conf"
-  for kv in \
-    "FastConnectable = true" \
-    "ReconnectAttempts=10" \
-    "ReconnectIntervals=1,2,4,8,16,32,64,128"; do
-    key="${kv%%=*}"
-    key="${key// /}"
-    if grep -q "^${key}" "$main_conf"; then
-      sed -i "s/^#\\?${key}.*/${kv}/" "$main_conf"
-    else
-      printf '\n%s\n' "$kv" >>"$main_conf"
-    fi
-  done
+  if [[ -f "$main_conf" ]]; then
+    for kv in \
+      "FastConnectable = true" \
+      "ReconnectAttempts=10" \
+      "ReconnectIntervals=1,2,4,8,16,32,64,128"; do
+      key="${kv%%=*}"
+      key="${key// /}"
+      if grep -qE "^#?${key}" "$main_conf"; then
+        sed -i "s/^#\\?${key}.*/${kv}/" "$main_conf"
+      else
+        printf '\n%s\n' "$kv" >>"$main_conf"
+      fi
+    done
+  fi
 
   btmgmt -i hci0 fast-conn on 2>/dev/null || true
   systemctl restart bluetooth.service
 
-  echo "System Bluetooth range tweaks applied."
-  echo "  - USB autosuspend disabled for Intel adapter"
+  echo "System Bluetooth range tweaks applied (no quality trade-off):"
+  echo "  - USB autosuspend disabled for Intel AX210"
   echo "  - FastConnectable + aggressive reconnect enabled"
 }
 
-case "${1:-status}" in
+ensure_conf_templates
+
+case "${1:-toggle}" in
+  toggle)
+    do_toggle
+    ;;
   range)
-    enable_range_conf
-    restart_wireplumber
-    apply_profile a2dp-sink-sbc
-    echo "Range mode enabled (SBC)."
+    set_range
     ;;
   quality)
-    enable_quality_conf
-    restart_wireplumber
-    apply_profile a2dp-sink
-    echo "Quality mode enabled (AAC)."
+    set_quality
     ;;
   status)
     show_status

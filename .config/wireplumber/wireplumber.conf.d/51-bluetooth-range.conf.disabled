@@ -1,0 +1,33 @@
+# Bluetooth "range" profile: prefer standard SBC for better distance/stability.
+# Enable by running: bt-audio-mode range
+# Trade-off: slightly lower fidelity than AAC.
+
+wireplumber.settings = {
+  bluetooth.profile-preference = "range"
+  bluetooth.autoswitch-to-headset-profile = false
+}
+
+monitor.bluez.properties = {
+  # Prefer lower-bitrate SBC over AAC/SBC-XQ for weaker RF conditions.
+  bluez5.codecs = [ sbc aac sbc_xq ]
+  bluez5.enable-sbc-xq = false
+}
+
+device.profile.priority.rules = [
+  {
+    matches = [
+      {
+        device.name = "~bluez_card.*"
+      }
+    ]
+    actions = {
+      update-props = {
+        priorities = [
+          "a2dp-sink-sbc",
+          "a2dp-sink",
+          "a2dp-sink-sbc_xq",
+        ]
+      }
+    }
+  }
+]

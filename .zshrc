@@ -139,6 +139,22 @@ light-theme() {
 }
 alias mcsr-offline="cd \"/home/borret/Documents/dev/MCSR Ranked Scraper\" && source .venv/bin/activate && python runner.py"
 
+# Cloudflare tunnel helper: handles 'cloudflared arch-box' and manages the service
+cloudflared() {
+    if [[ "$1" == "arch-box" ]]; then
+        if systemctl --user is-active --quiet cloudflared; then
+            echo "Cloudflare Tunnel (arch-box) is already active as a systemd user service."
+            systemctl --user status cloudflared --no-pager
+        else
+            echo "Starting Cloudflare Tunnel (arch-box) via systemd..."
+            systemctl --user start cloudflared
+            systemctl --user status cloudflared --no-pager
+        fi
+    else
+        command cloudflared "$@"
+    fi
+}
+
 
 # Added by Antigravity CLI installer
 export PATH="/home/borret/.local/bin:$PATH"

@@ -21,9 +21,19 @@ if ! bluetoothctl info "$AIRPODS_MAC" | grep -q "Connected: yes"; then
 fi
 
 # 2. Check if card exists and switch to A2DP profile
+# Honor bt-audio-mode (Super+V): quality=AAC, range=SBC
 if pactl list cards short | grep -q "$CARD_NAME"; then
-    echo "AirPods detected, switching to A2DP profile..."
-    pactl set-card-profile "$CARD_NAME" a2dp-sink
+    MODE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/bt-audio-mode"
+    MODE="quality"
+    [[ -f "$MODE_FILE" ]] && MODE="$(cat "$MODE_FILE")"
+    if [[ "$MODE" == "range" ]]; then
+        PROFILE="a2dp-sink-sbc"
+        echo "AirPods detected, switching to range profile (SBC)..."
+    else
+        PROFILE="a2dp-sink"
+        echo "AirPods detected, switching to quality profile (AAC)..."
+    fi
+    pactl set-card-profile "$CARD_NAME" "$PROFILE"
     
     # Wait for the sink to appear (PipeWire sink registration is asynchronous)
     echo "Waiting for audio sink..."

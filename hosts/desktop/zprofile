@@ -4,3 +4,29 @@ export INTEL_DEBUG=noccs
 
 # Added by Antigravity CLI installer
 export PATH="/home/borret/.local/bin:$PATH"
+
+# ---------------------------------------------------------------------------
+# Seamless SDDM → Hyprland handoff
+# SDDM's X11 greeter exits before Hyprland owns the GPU, which otherwise
+# flashes the TTY for a few seconds. Blank the active VT as early as possible
+# during a Wayland graphical login (does not affect SSH or real TTY logins).
+# ---------------------------------------------------------------------------
+if [[ "${XDG_SESSION_TYPE}" == "wayland" && -z "${SSH_CONNECTION}" ]]; then
+  _blank_vt() {
+    local target="$1"
+    [[ -n "$target" && -w "$target" ]] || return 0
+    # Clear screen, clear scrollback, hide cursor
+    printf '\033[H\033[2J\033[3J\033[?25l' >"$target" 2>/dev/null || true
+  }
+
+  # Prefer the kernel's active VT (usually tty2 for the Hyprland session)
+  if [[ -r /sys/class/tty/tty0/active ]]; then
+    _blank_vt "/dev/$(< /sys/class/tty/tty0/active)"
+  fi
+  _blank_vt /dev/tty
+  _blank_vt /dev/tty2
+
+  # Best-effort: turn cursor off via setterm when available
+  command -v setterm >/dev/null 2>&1 && setterm --cursor off 2>/dev/null || true
+  unset -f _blank_vt
+fi

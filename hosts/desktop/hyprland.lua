@@ -36,6 +36,28 @@ hl.device({
     kb_options = "altwin:swap_alt_win"
 })
 
+-- Virtual keyboard rules for remote access (wayvnc)
+-- Maps Caps Lock -> Super on remote sessions while keeping Keychron K2 untouched
+hl.device({
+    name = "hl-virtual-keyboard-wayvnc",
+    kb_options = "caps:super"
+})
+
+hl.device({
+    name = "wlr_virtual_keyboard_v1",
+    kb_options = "caps:super"
+})
+
+hl.device({
+    name = "wlr-virtual-keyboard-v1",
+    kb_options = "caps:super"
+})
+
+hl.device({
+    name = "virtual-keyboard",
+    kb_options = "caps:super"
+})
+
 -----------------------------
 --- ENVIRONMENT VARIABLES ###
 -----------------------------
@@ -81,16 +103,27 @@ hl.on("hyprland.start", function()
               /usr/lib/xdg-desktop-portal &)
     ']])
 
-    -- Plugins: defer so they never compete with first frame / DRM init
+    -- Plugins: defer so they never compete with first frame / DRM init.
+    -- Official hyprexpo was removed from hyprwm/hyprland-plugins; we load the
+    -- maintained sandwichfarm fork from a user-owned build (hyprpm cache under
+    -- /var/cache/hyprpm is root-owned and cannot install plugins as user).
     hl.exec_cmd([[bash -c '
-        sleep 3
-        hyprpm reload || (hyprpm update && hyprpm reload)
-        sleep 1
-        hyprctl keyword plugin:hyprexpo:columns 3
-        hyprctl keyword plugin:hyprexpo:gaps_in 5
-        hyprctl keyword plugin:hyprexpo:gaps_out 5
-        hyprctl keyword plugin:hyprexpo:bg_col "rgb(111111)"
-        hyprctl keyword plugin:hyprexpo:workspace_method "first 1"
+        sleep 2
+        PLUGIN="$HOME/.local/share/hyprland-plugins/hyprexpo/hyprexpo.so"
+        if [ -f "$PLUGIN" ]; then
+            if hyprctl plugin load "$PLUGIN" 2>/dev/null; then
+                hyprctl keyword plugin:hyprexpo:columns 3 2>/dev/null || true
+                hyprctl keyword plugin:hyprexpo:gaps_in 5 2>/dev/null || true
+                hyprctl keyword plugin:hyprexpo:gaps_out 5 2>/dev/null || true
+                hyprctl keyword plugin:hyprexpo:bg_col "rgb(111111)" 2>/dev/null || true
+                hyprctl keyword plugin:hyprexpo:workspace_method "first 1" 2>/dev/null || true
+                hyprctl keyword plugin:hyprexpo:gesture_distance 200 2>/dev/null || true
+                hyprctl keyword plugin:hyprexpo:cancel_key "escape" 2>/dev/null || true
+                hyprctl keyword plugin:hyprexpo:show_cursor 1 2>/dev/null || true
+            fi
+        else
+            hyprpm reload 2>/dev/null || true
+        fi
     ']])
 
     -- Non-critical background services
@@ -156,7 +189,7 @@ hl.config({
         new_status = "master"
     },
     input = {
-        kb_layout = "apt",
+        kb_layout = "apt,us",
         resolve_binds_by_sym = 1,
         kb_variant = "",
         kb_model = "",
@@ -170,6 +203,9 @@ hl.config({
     },
     xwayland = {
         force_zero_scaling = true
+    },
+    ecosystem = {
+        no_donation_nag = true
     }
 })
 
@@ -227,7 +263,17 @@ hl.bind(mainMod .. " + P", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + Y", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + N", hl.dsp.layout("togglesplit"))
 
-hl.bind(mainMod .. " + grave", function() hl.plugin.hyprexpo.expo("toggle") end)
+-- Workspace overview (hyprexpo). Load the sandwichfarm plugin on demand if
+-- autostart hasn't finished yet or Hyprland was reloaded without plugins.
+hl.bind(mainMod .. " + grave", function()
+    if not (hl.plugin and hl.plugin.hyprexpo) then
+        local plugin = os.getenv("HOME") .. "/.local/share/hyprland-plugins/hyprexpo/hyprexpo.so"
+        hl.exec_cmd("hyprctl plugin load " .. plugin)
+    end
+    if hl.plugin and hl.plugin.hyprexpo then
+        hl.plugin.hyprexpo.expo("toggle")
+    end
+end)
 hl.bind(mainMod .. " + TAB",            hl.dsp.focus({ workspace = "previous" }))
 hl.bind(mainMod .. " + SHIFT + TAB",   hl.dsp.exec_cmd("~/.config/hypr/scripts/next_workspace.sh"))
 hl.bind(mainMod .. " + CTRL + TAB",    hl.dsp.exec_cmd("~/.config/hypr/scripts/prev_workspace.sh"))

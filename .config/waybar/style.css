@@ -18,7 +18,11 @@
  * -------------------------------------------------------------------------- */
 * {
 	border: none;
-	font-family: "JetBrains Mono", "Font Awesome 5 Pro", sans-serif;
+	/* Prefer Nerd Font Propo for icons: default Nerd patch uses
+	   double-width glyphs (adv 600, ink ~970) that overflow into right
+	   padding. Mono avoids overflow but shrinks icons; Propo keeps full
+	   ink size with advance matching the glyph width. */
+	font-family: "JetBrains Mono", "JetBrainsMono Nerd Font Propo", "JetBrainsMonoNL Nerd Font Propo", "Symbols Nerd Font Mono", "Font Awesome 5 Pro", sans-serif;
 	font-size: 13px;
 	font-weight: 600;
 	min-height: 0;
